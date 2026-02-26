@@ -4,9 +4,9 @@ on:
   schedule:
     - cron: "0 3 * * *"  # Daily at 3am UTC
   workflow_dispatch:       # Manual trigger
-  workflow_run:            # Run after CI to capture accurate CI checkout counts
-    workflows: ["CI"]
-    types: [completed]
+  # workflow_run:            # Uncomment and set your CI workflow name to run after CI
+  #   workflows: ["CI"]
+  #   types: [completed]
 
 jobs:
   update-badges:
@@ -393,7 +393,7 @@ jobs:
                 repo: `${owner}/${repo}`,
                 period: period,
                 generatedAt: now.toISOString(),
-                version: "0.8.3",
+                version: "0.1.0",
                 cumulativeTotals: {
                   downloads: state.totalDownloads,
                   clones: state.totalClones,

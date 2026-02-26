@@ -32,20 +32,20 @@
   ],
   "popularPaths": [
     {
-      "path": "/DazzleML/comfyui-triton-and-sageattention-installer",
-      "title": "DazzleML/comfyui-triton-and-sageattention-installer",
+      "path": "/ExampleOrg/example-project",
+      "title": "ExampleOrg/example-project",
       "count": 2400,
       "uniques": 980
     },
     {
-      "path": "/DazzleML/comfyui-triton-and-sageattention-installer/blob/main/README.md",
-      "title": "comfyui-triton-and-sageattention-installer\u00c2\u00b7README",
+      "path": "/ExampleOrg/example-project/blob/main/README.md",
+      "title": "example-project\u00c2\u00b7README",
       "count": 870,
       "uniques": 410
     },
     {
-      "path": "/DazzleML/comfyui-triton-and-sageattention-installer/releases",
-      "title": "Releases \u00c3\u201a\u00c2\u00b7 DazzleML/comfyui-triton-and-sageattention-installer",
+      "path": "/ExampleOrg/example-project/releases",
+      "title": "Releases \u00c3\u201a\u00c2\u00b7 ExampleOrg/example-project",
       "count": 340,
       "uniques": 210
     }

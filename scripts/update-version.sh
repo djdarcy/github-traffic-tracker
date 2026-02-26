@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Manual version update script for ComfyUI Smart Resolution Calculator
+# Manual version update script for GitHub Traffic Tracker
 # Updates version string without requiring a commit
 # Useful for testing and manual version synchronization
 #

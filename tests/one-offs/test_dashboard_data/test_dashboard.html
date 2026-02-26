@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST MODE: ComfyUI Triton Stats Dashboard</title>
+    <title>TEST MODE: Example Project Stats Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
             onerror="document.getElementById('chart-fallback').classList.remove('hidden')"></script>
     <style>
@@ -242,8 +242,8 @@
 <!-- ===================== REAL DASHBOARD HTML ===================== -->
 <div class="container">
     <header>
-        <a href="https://github.com/DazzleML/comfyui-triton-and-sageattention-installer" class="banner-link">
-            <p class="banner-title">ComfyUI Triton &amp; SageAttention Installer</p>
+        <a href="https://github.com/ExampleOrg/example-project" class="banner-link">
+            <p class="banner-title">Example Project</p>
             <p class="banner-arrow">View repository &rarr;</p>
         </a>
         <h1>Project Statistics <span style="color: #3fb950; font-size: 0.7em;">[TEST]</span></h1>
@@ -513,7 +513,7 @@
 
     <footer>
         <p>Data updates daily at 3:00 AM UTC &middot; Last data point: <span id="last-updated">--</span></p>
-        <p><a href="https://github.com/DazzleML/comfyui-triton-and-sageattention-installer">Repository</a> &middot; <a href="https://github.com/DazzleML/comfyui-triton-and-sageattention-installer/releases">Releases</a></p>
+        <p><a href="https://github.com/ExampleOrg/example-project">Repository</a> &middot; <a href="https://github.com/ExampleOrg/example-project/releases">Releases</a></p>
         <aside class="privacy-note">
             <strong>Test Mode</strong> &mdash; This is a test harness using synthetic data. No real gist or GitHub API calls are made.
             See the <code>_scenario</code> fields in <code>state.json</code> for what each date range exercises.
@@ -854,20 +854,20 @@
             ],
             popularPaths: [
                 {
-                    path: '/DazzleML/comfyui-triton-and-sageattention-installer',
-                    title: 'DazzleML/comfyui-triton-and-sageattention-installer',
+                    path: '/ExampleOrg/example-project',
+                    title: 'ExampleOrg/example-project',
                     count: 2400, uniques: 980
                 },
                 {
-                    path: '/DazzleML/comfyui-triton-and-sageattention-installer/blob/main/README.md',
+                    path: '/ExampleOrg/example-project/blob/main/README.md',
                     // Double-encoded middot to exercise the title cleanup code
-                    title: 'comfyui-triton-and-sageattention-installer\u00c2\u00b7README',
+                    title: 'example-project\u00c2\u00b7README',
                     count: 870, uniques: 410
                 },
                 {
-                    path: '/DazzleML/comfyui-triton-and-sageattention-installer/releases',
+                    path: '/ExampleOrg/example-project/releases',
                     // Triple-encoded middot to exercise the triple-encode cleanup path
-                    title: 'Releases \u00c3\u201a\u00c2\u00b7 DazzleML/comfyui-triton-and-sageattention-installer',
+                    title: 'Releases \u00c3\u201a\u00c2\u00b7 ExampleOrg/example-project',
                     count: 340, uniques: 210
                 }
             ],
@@ -1064,7 +1064,7 @@
 
             // Return gist object with file entries pointing to our fake raw_urls
             var gistResp = {
-                id: 'b44b12adb623ae3ac8f1993970ab5266',
+                id: 'example_archive_gist_id',
                 description: 'TEST archive gist',
                 files: {
                     'archive-2025-12.json': {
@@ -1144,13 +1144,13 @@
 // =====================================================================
 
 // Configuration — URLs match what the fetch interceptor expects
-const GIST_RAW_BASE = 'https://gist.githubusercontent.com/djdarcy/77f23ace7465637447db0a6c79cf46ba/raw';
+const GIST_RAW_BASE = 'https://gist.githubusercontent.com/djdarcy/example_badge_gist_id/raw';
 const STATE_URL = GIST_RAW_BASE + '/state.json';
-const ARCHIVE_GIST_ID = 'b44b12adb623ae3ac8f1993970ab5266';
+const ARCHIVE_GIST_ID = 'example_archive_gist_id';
 const ARCHIVE_API_URL = 'https://api.github.com/gists/' + ARCHIVE_GIST_ID;
-const REPO_OWNER = 'DazzleML';
-const REPO_NAME = 'comfyui-triton-and-sageattention-installer';
-const REPO_CREATED = '2025-07-23';
+const REPO_OWNER = 'ExampleOrg';
+const REPO_NAME = 'example-project';
+const REPO_CREATED = '2025-01-01';
 var primaryAuthor = null;
 
 // State

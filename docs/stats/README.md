@@ -1,6 +1,6 @@
 # Project Statistics Dashboard
 
-Interactive dashboard showing traffic analytics for [ComfyUI Triton & SageAttention Installer](https://github.com/DazzleML/comfyui-triton-and-sageattention-installer).
+Interactive dashboard showing traffic analytics for [GitHub Traffic Tracker](https://github.com/djdarcy/github-traffic-tracker).
 
 ## How It Works
 
@@ -23,7 +23,7 @@ A [GitHub Actions workflow](../../.github/workflows/traffic-badges.yml) runs dai
 
 | Source | Type | Contents |
 |--------|------|----------|
-| [Badge Gist](https://gist.github.com/djdarcy/77f23ace7465637447db0a6c79cf46ba) | Public | Current stats, rolling 31-day daily history |
+| [Badge Gist](https://gist.github.com/djdarcy/fffb1b8632243b40ad183a161ff0f32e) | Public | Current stats, rolling 31-day daily history |
 | Archive Gist | Unlisted | Monthly snapshots with full daily breakdowns |
 | GitHub Statistics API | Public | Commit activity, code frequency, participation, contributors |
 
@@ -47,6 +47,6 @@ A [GitHub Actions workflow](../../.github/workflows/traffic-badges.yml) runs dai
 
 The dashboard is hosted on GitHub Pages:
 
-**https://dazzleml.github.io/comfyui-triton-and-sageattention-installer/stats/**
+**https://djdarcy.github.io/github-traffic-tracker/stats/**
 
 You can also open `index.html` directly in a browser for local testing — the gist CDN has permissive CORS headers.

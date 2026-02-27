@@ -4,9 +4,15 @@ on:
   schedule:
     - cron: "0 3 * * *"  # Daily at 3am UTC
   workflow_dispatch:       # Manual trigger
+  push:                    # Auto-refresh on push (rate-limited, see freshness check below)
+    branches: [main]
   # workflow_run:            # Uncomment and set your CI workflow name to run after CI
   #   workflows: ["CI"]
   #   types: [completed]
+
+concurrency:
+  group: traffic-collection
+  cancel-in-progress: true
 
 jobs:
   update-badges:
@@ -23,6 +29,32 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const gistId = process.env.GIST_ID;
+
+            // 0. Freshness check — skip if last run was < 1 hour ago
+            // Only applies to push-triggered runs; schedule and manual always run
+            const eventName = context.eventName;
+            const FRESHNESS_MINUTES = 60;
+            if (eventName === 'push' && gistId) {
+              try {
+                const gist = await github.rest.gists.get({ gist_id: gistId });
+                const stateFile = gist.data.files["state.json"];
+                if (stateFile) {
+                  const prevState = JSON.parse(stateFile.content);
+                  const lastHistory = (prevState.dailyHistory || []).slice(-1)[0];
+                  if (lastHistory && lastHistory.capturedAt) {
+                    const lastRun = new Date(lastHistory.capturedAt);
+                    const minutesAgo = (Date.now() - lastRun.getTime()) / 60000;
+                    if (minutesAgo < FRESHNESS_MINUTES) {
+                      console.log(`Skipping push-triggered run: last collection was ${Math.round(minutesAgo)}m ago (threshold: ${FRESHNESS_MINUTES}m)`);
+                      return;
+                    }
+                    console.log(`Last collection: ${Math.round(minutesAgo)}m ago — proceeding`);
+                  }
+                }
+              } catch (e) {
+                console.log(`Freshness check failed (proceeding anyway): ${e.message}`);
+              }
+            }
 
             // 1. Total release asset downloads
             let totalDownloads = 0;

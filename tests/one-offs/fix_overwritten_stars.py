@@ -13,8 +13,8 @@ doesn't match the entry date (meaning the values were overwritten, not captured
 at the correct time) and we can't reconstruct from API.
 
 Usage:
-    python scripts/fix_overwritten_stars.py --gist-id GIST --repo OWNER/REPO
-    python scripts/fix_overwritten_stars.py --gist-id GIST --repo OWNER/REPO --apply
+  python fix_overwritten_stars.py --dry-run       # Preview changes
+  python fix_overwritten_stars.py --apply          # Apply to gist
 """
 
 import argparse
@@ -22,6 +22,10 @@ import json
 import subprocess
 import sys
 from datetime import datetime, timedelta
+
+
+GIST_ID = "77f23ace7465637447db0a6c79cf46ba"
+REPO = "DazzleML/comfyui-triton-and-sageattention-installer"
 
 
 def gh_api(endpoint):
@@ -36,10 +40,10 @@ def gh_api(endpoint):
     return json.loads(result.stdout)
 
 
-def get_star_history(repo):
+def get_star_history():
     """Get star dates from Stargazers API (with timestamps)."""
     result = subprocess.run(
-        ["gh", "api", f"repos/{repo}/stargazers",
+        ["gh", "api", f"repos/{REPO}/stargazers",
          "-H", "Accept: application/vnd.github.star+json",
          "--paginate"],
         capture_output=True, text=True
@@ -80,11 +84,7 @@ def get_star_history(repo):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Fix overwritten stars/forks/openIssues in gist state.json"
-    )
-    parser.add_argument("--gist-id", required=True, help="Badge gist ID containing state.json")
-    parser.add_argument("--repo", required=True, help="GitHub repo in OWNER/REPO format")
+    parser = argparse.ArgumentParser(description="Fix overwritten stars in gist")
     parser.add_argument("--dry-run", action="store_true", default=True,
                         help="Preview changes without writing (default)")
     parser.add_argument("--apply", action="store_true",
@@ -94,20 +94,22 @@ def main():
     if args.apply:
         args.dry_run = False
 
-    gist_id = args.gist_id
-    repo = args.repo
-
     # Fetch current gist state
     print("Fetching current gist state...")
-    gist_data = gh_api(f"gists/{gist_id}")
+    gist_data = gh_api(f"gists/{GIST_ID}")
     if not gist_data:
         sys.exit(1)
 
     state = json.loads(gist_data["files"]["state.json"]["content"])
 
+    # Save pre-fix state
+    with open("_pre_star_fix_state.json", "w") as f:
+        json.dump(state, f, indent=2)
+    print("Saved pre-fix state to _pre_star_fix_state.json")
+
     # Get star history
-    print(f"Fetching star history from Stargazers API for {repo}...")
-    star_history = get_star_history(repo)
+    print("Fetching star history from Stargazers API...")
+    star_history = get_star_history()
     if star_history:
         print(f"Got star history: {len(star_history)} days, "
               f"range {min(star_history.keys())} to {max(star_history.keys())}")
@@ -155,7 +157,7 @@ def main():
             }
         })
         result = subprocess.run(
-            ["gh", "api", f"gists/{gist_id}", "-X", "PATCH", "--input", "-"],
+            ["gh", "api", f"gists/{GIST_ID}", "-X", "PATCH", "--input", "-"],
             input=payload, capture_output=True, text=True
         )
         if result.returncode == 0:

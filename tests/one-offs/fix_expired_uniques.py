@@ -7,14 +7,26 @@ Entries with clones > 0 but uniqueClones == 0 are suspect — they mean
 the dashboard display a gap rather than a false zero.
 
 Usage:
-    python scripts/fix_expired_uniques.py --gist-id GIST_ID          # dry-run
-    python scripts/fix_expired_uniques.py --gist-id GIST_ID --write  # apply
+    python tests/one-offs/fix_expired_uniques.py                    # dry-run triton
+    python tests/one-offs/fix_expired_uniques.py --write             # apply to triton
+    python tests/one-offs/fix_expired_uniques.py --repo ncsi         # dry-run NCSI
+    python tests/one-offs/fix_expired_uniques.py --repo ncsi --write # apply to NCSI
 """
 
-import argparse
 import json
 import subprocess
 import sys
+
+CONFIGS = {
+    "triton": {
+        "gist_id": "77f23ace7465637447db0a6c79cf46ba",
+        "label": "ComfyUI Triton & SageAttention",
+    },
+    "ncsi": {
+        "gist_id": "1362078955559665832b72835b309e98",
+        "label": "NCSI Resolver",
+    },
+}
 
 
 def run_gh(args):
@@ -26,17 +38,20 @@ def run_gh(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Remove misleading uniqueClones/uniqueViews=0 from expired API window entries"
-    )
-    parser.add_argument("--gist-id", required=True, help="Badge gist ID containing state.json")
-    parser.add_argument("--label", default=None, help="Display label for the repo (optional)")
-    parser.add_argument("--write", action="store_true", help="Apply changes (default: dry-run)")
-    args = parser.parse_args()
+    write_mode = "--write" in sys.argv
 
-    gist_id = args.gist_id
-    label = args.label or gist_id
-    write_mode = args.write
+    repo_key = "triton"
+    if "--repo" in sys.argv:
+        idx = sys.argv.index("--repo")
+        if idx + 1 < len(sys.argv):
+            repo_key = sys.argv[idx + 1].lower()
+    if repo_key not in CONFIGS:
+        print(f"Unknown repo: {repo_key}. Options: {', '.join(CONFIGS.keys())}")
+        sys.exit(1)
+
+    config = CONFIGS[repo_key]
+    gist_id = config["gist_id"]
+    label = config["label"]
 
     print(f"{'=' * 60}")
     print(f"Fix expired unique data for {label}")
@@ -89,10 +104,18 @@ def main():
         return
 
     print("\nUpdating gist...")
-    payload = json.dumps({"files": {"state.json": {"content": json.dumps(state, indent=2)}}})
+    payload = {"files": {"state.json": {"content": json.dumps(state, indent=2)}}}
+    payload_path = "tests/one-offs/_fix_uniques_payload.json"
+    with open(payload_path, "w") as f:
+        json.dump(payload, f)
+
     updated_at = run_gh(["api", "--method", "PATCH", f"gists/{gist_id}",
-                         "--input", "-"], input=payload)
-    print(f"Gist updated. Done.")
+                         "--input", payload_path, "--jq", ".updated_at"])
+    print(f"Gist updated at {updated_at}")
+
+    import os
+    os.remove(payload_path)
+    print("Done.")
 
 
 if __name__ == "__main__":

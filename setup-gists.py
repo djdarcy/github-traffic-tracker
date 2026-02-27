@@ -14,7 +14,25 @@ Usage:
     python setup-gists.py --dry-run                          # preview only
 
 Requires: Python 3.10+, gh CLI (https://cli.github.com)
+
+If ghtraf is installed (pip install github-traffic-tracker), this script
+delegates to `ghtraf create`. Otherwise it runs standalone.
 """
+
+# Try to delegate to the ghtraf package if installed
+try:
+    from ghtraf.cli import main as _ghtraf_main
+    import sys
+
+    def _delegate():
+        """Delegate to ghtraf create with the same arguments."""
+        sys.exit(_ghtraf_main(["create"] + sys.argv[1:]))
+
+    if __name__ == "__main__":
+        _delegate()
+        # If we get here, _delegate raised or returned
+except ImportError:
+    pass  # ghtraf not installed — run standalone below
 
 import argparse
 import html as html_module

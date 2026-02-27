@@ -1,0 +1,763 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "id": "2026-02-24__13-20-41__clone-download-badge-analysis"
+    },
+    {
+      "id": "2026-02-24__14-41-49__full-postmortem_traffic-badges-and-version-consolidation"
+    },
+    {
+      "id": "2026-02-24__16-02-18__context-postmortem_triton-badges-dashboard-setup"
+    },
+    {
+      "id": "2026-02-24__16-54-32__full-postmortem_v0.8.1-badges-dashboard-enhanced-stats-plan"
+    },
+    {
+      "id": "2026-02-25__02-55-42__full-postmortem_v0.7.8-tabbed-dashboard-port-and-ci-clone-inflation"
+    },
+    {
+      "id": "2026-02-25__03-08-58__ci-clone-subtraction-precision-analysis"
+    },
+    {
+      "id": "2026-02-25__12-30-18__full-postmortem_v0.7.9-traffic-workflow-fixes"
+    },
+    {
+      "id": "2026-02-25__14-08-29__full-postmortem_v0.7.9-organic-clones-and-dashboard-accuracy"
+    },
+    {
+      "id": "2026-02-25__15-06-13__projection-fix-dev-tab-referrer-chart"
+    },
+    {
+      "id": "2026-02-25__15-29-09__dev-audit-tab-implementation"
+    },
+    {
+      "id": "2026-02-25__15-52-18__full-postmortem_v0.7.10-projection-and-data-expansion"
+    },
+    {
+      "id": "2026-02-25__16-37-53__full-postmortem_v0.7.10-phase2-dashboard-enhancements"
+    },
+    {
+      "id": "2026-02-25__17-23-23__full-postmortem_v0.7.11-phase3-dev-tab"
+    },
+    {
+      "id": "2026-02-25__18-51-15__claude-plan__stats-migration-and-standalone-extraction"
+    },
+    {
+      "id": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "id": "2026-02-25__23-09-16__full-postmortem_stats-migration-phase1"
+    },
+    {
+      "id": "2026-02-26__05-54-51__claude-plan__setup-script-templatization"
+    },
+    {
+      "id": "2026-02-26__11-49-44__full-postmortem_setup-gists-and-project-architecture"
+    },
+    {
+      "id": "2026-02-26__13-13-59__star-history-multi-view-analysis"
+    },
+    {
+      "id": "2026-02-26__14-23-10__full-postmortem_setup-tooling-dogfood-and-push"
+    },
+    {
+      "id": "2026-02-26__14-33-24__gist-backend-scalability-and-free-tier-limits"
+    },
+    {
+      "id": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "id": "2026-02-26__14-57-19__pluggable-tabs-external-registries-and-conversion-analytics"
+    },
+    {
+      "id": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption"
+    },
+    {
+      "id": "2026-02-26__15-40-00__both_claude-json-corruption-race-condition"
+    },
+    {
+      "id": "2026-02-26__15-10-00__both_commands-to-skills-migration"
+    },
+    {
+      "id": "GTT-Knowledge-Map"
+    },
+    {
+      "id": "2026-02-26__19-59-19__context-postmortem_v0.1.2-script-cleanup-and-workflow-push-trigger"
+    },
+    {
+      "id": "2026-02-26__20-09-14__readme-redesign-diagram-and-structure"
+    },
+    {
+      "id": "2026-02-26__20-37-20__dev-workflow-process_ghtraf-cli-phase2-planning"
+    },
+    {
+      "id": "2026-02-26__21-09-11__dev-workflow-process_test-harness-architecture"
+    },
+    {
+      "id": "2026-02-26__21-14-53__verbosity-logging-channels-integration"
+    },
+    {
+      "id": "2026-02-26__21-39-18__full-postmortem_ghtraf-cli-scaffold-and-test-harness"
+    },
+    {
+      "id": "2026-02-26__21-46-37__dev-workflow-process_backlink-tooling-evaluation"
+    },
+    {
+      "id": "2026-02-26__21-23-08__both_knowledge-system-assessment"
+    },
+    {
+      "id": "2026-02-26__21-43-37__both_oracle-github-issue-tracking"
+    },
+    {
+      "id": "Dashboard-Features"
+    },
+    {
+      "id": "2026-02-24__15-29-38__both_interactive-dashboard-cards"
+    },
+    {
+      "id": "2026-02-24__14-24-35__both_cascading-recency-badge"
+    },
+    {
+      "id": "Data-Quality-and-Stats"
+    },
+    {
+      "id": "2026-02-25__22-08-39__both_feb24-clone-anomaly"
+    },
+    {
+      "id": "2026-02-26__20-12-34__claude_organic-first-principle"
+    },
+    {
+      "id": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "id": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0"
+    },
+    {
+      "id": "2026-02-26__02-26-32__both_github-api-middot-encoding"
+    },
+    {
+      "id": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context"
+    },
+    {
+      "id": "2026-02-26__20-47-31__claude_project-ecosystem-map"
+    },
+    {
+      "id": "Tooling-and-CLI"
+    },
+    {
+      "id": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "id": "2026-02-26__12-41-40__both_setup-gists-variable-setting-gap"
+    },
+    {
+      "id": "2026-02-26__14-30-44__both_workflow-trigger-chaining"
+    },
+    {
+      "id": "2026-02-26__15-02-04__both_v0.1.3-roadmap-and-dazzlecmd"
+    },
+    {
+      "id": "backlinks"
+    },
+    {
+      "id": "concepts"
+    },
+    {
+      "id": "manifest"
+    },
+    {
+      "id": "gtt_issue_10_pluggable-integration-system"
+    },
+    {
+      "id": "gtt_issue_11_conversion-ratio-analytics"
+    },
+    {
+      "id": "gtt_issue_12_readme-redesign"
+    },
+    {
+      "id": "gtt_issue_13_thac0-verbosity-epic"
+    },
+    {
+      "id": "gtt_issue_14_port-log-lib-help-lib"
+    },
+    {
+      "id": "gtt_issue_15_cli-verbosity-flags"
+    },
+    {
+      "id": "gtt_issue_16_bridge-output-channels-hints"
+    },
+    {
+      "id": "gtt_issue_17_instrument-modules"
+    },
+    {
+      "id": "gtt_issue_18_tests-and-docs"
+    },
+    {
+      "id": "gtt_issue_19_test-infrastructure-parent"
+    },
+    {
+      "id": "gtt_issue_1_roadmap"
+    },
+    {
+      "id": "gtt_issue_20_playwright-e2e-tests"
+    },
+    {
+      "id": "gtt_issue_21_data-testid-attributes"
+    },
+    {
+      "id": "gtt_issue_22_ci-test-pipeline"
+    },
+    {
+      "id": "gtt_issue_23_promote-merge-logic-test"
+    },
+    {
+      "id": "gtt_issue_2_quicknotes"
+    },
+    {
+      "id": "gtt_issue_3_embeddable_charts"
+    },
+    {
+      "id": "gtt_issue_4_badge_collection"
+    },
+    {
+      "id": "gtt_issue_5_time_segmented_history"
+    },
+    {
+      "id": "gtt_issue_7_star_history_multi_view"
+    },
+    {
+      "id": "gtt_issue_9_free_tier_limits_and_scalability"
+    },
+    {
+      "id": "issue_2_2026.02.26_01"
+    },
+    {
+      "id": "issue_2_2026.02.26_02"
+    },
+    {
+      "id": "issue_6_2026.02.26_02"
+    },
+    {
+      "id": "issue_ghtraf-cli_2026.02.26_01"
+    },
+    {
+      "id": "issue_ghtraf-token_2026.02.26_01"
+    },
+    {
+      "id": "2026-02-26__13-50-46__claude_obsidian-migration-from-source-projects"
+    },
+    {
+      "id": "2026-02-25__12-37-21__solution-zero-implementation-plan"
+    },
+    {
+      "id": "2026-02-25__02-15-38__foss-reward-system-synthesis"
+    },
+    {
+      "id": "2026-02-24__23-28-43__github-foss-monetization-strategy"
+    },
+    {
+      "id": "README"
+    }
+  ],
+  "links": [
+    {
+      "source": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption",
+      "target": "2026-02-26__15-40-00__both_claude-json-corruption-race-condition"
+    },
+    {
+      "source": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption",
+      "target": "2026-02-26__15-10-00__both_commands-to-skills-migration"
+    },
+    {
+      "source": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption",
+      "target": "GTT-Knowledge-Map"
+    },
+    {
+      "source": "2026-02-26__15-40-00__both_claude-json-corruption-race-condition",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "2026-02-26__15-40-00__both_claude-json-corruption-race-condition",
+      "target": "2026-02-26__15-10-00__both_commands-to-skills-migration"
+    },
+    {
+      "source": "2026-02-26__15-10-00__both_commands-to-skills-migration",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-24__13-20-41__clone-download-badge-analysis"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-24__14-41-49__full-postmortem_traffic-badges-and-version-consolidation"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-24__16-02-18__context-postmortem_triton-badges-dashboard-setup"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-24__16-54-32__full-postmortem_v0.8.1-badges-dashboard-enhanced-stats-plan"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__02-55-42__full-postmortem_v0.7.8-tabbed-dashboard-port-and-ci-clone-inflation"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__03-08-58__ci-clone-subtraction-precision-analysis"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__12-30-18__full-postmortem_v0.7.9-traffic-workflow-fixes"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__14-08-29__full-postmortem_v0.7.9-organic-clones-and-dashboard-accuracy"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__15-06-13__projection-fix-dev-tab-referrer-chart"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__15-29-09__dev-audit-tab-implementation"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__15-52-18__full-postmortem_v0.7.10-projection-and-data-expansion"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__16-37-53__full-postmortem_v0.7.10-phase2-dashboard-enhancements"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__17-23-23__full-postmortem_v0.7.11-phase3-dev-tab"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__18-51-15__claude-plan__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-25__23-09-16__full-postmortem_stats-migration-phase1"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__05-54-51__claude-plan__setup-script-templatization"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__11-49-44__full-postmortem_setup-gists-and-project-architecture"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__13-13-59__star-history-multi-view-analysis"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__14-33-24__gist-backend-scalability-and-free-tier-limits"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__14-57-19__pluggable-tabs-external-registries-and-conversion-analytics"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__20-12-34__claude_organic-first-principle"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__15-53-00__full-postmortem_oracle-agent-skill-and-claude-json-corruption"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__15-40-00__both_claude-json-corruption-race-condition"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__15-10-00__both_commands-to-skills-migration"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "2026-02-26__20-47-31__claude_project-ecosystem-map"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "Data-Quality-and-Stats"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "Dashboard-Features"
+    },
+    {
+      "source": "GTT-Knowledge-Map",
+      "target": "Tooling-and-CLI"
+    },
+    {
+      "source": "2026-02-26__21-46-37__dev-workflow-process_backlink-tooling-evaluation",
+      "target": "2026-02-26__21-23-08__both_knowledge-system-assessment"
+    },
+    {
+      "source": "2026-02-26__21-46-37__dev-workflow-process_backlink-tooling-evaluation",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "2026-02-26__21-46-37__dev-workflow-process_backlink-tooling-evaluation",
+      "target": "2026-02-26__21-43-37__both_oracle-github-issue-tracking"
+    },
+    {
+      "source": "2026-02-26__21-23-08__both_knowledge-system-assessment",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "2026-02-26__21-43-37__both_oracle-github-issue-tracking",
+      "target": "2026-02-26__21-23-08__both_knowledge-system-assessment"
+    },
+    {
+      "source": "2026-02-26__21-43-37__both_oracle-github-issue-tracking",
+      "target": "2026-02-26__14-56-43__doc-reader-oracle-agent-and-skill"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-24__16-54-32__full-postmortem_v0.8.1-badges-dashboard-enhanced-stats-plan"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-25__02-55-42__full-postmortem_v0.7.8-tabbed-dashboard-port-and-ci-clone-inflation"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-25__15-29-09__dev-audit-tab-implementation"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-25__17-23-23__full-postmortem_v0.7.11-phase3-dev-tab"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-25__16-37-53__full-postmortem_v0.7.10-phase2-dashboard-enhancements"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-26__13-13-59__star-history-multi-view-analysis"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-26__14-57-19__pluggable-tabs-external-registries-and-conversion-analytics"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-25__15-06-13__projection-fix-dev-tab-referrer-chart"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-24__15-29-38__both_interactive-dashboard-cards"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-24__13-20-41__clone-download-badge-analysis"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "2026-02-24__14-24-35__both_cascading-recency-badge"
+    },
+    {
+      "source": "Dashboard-Features",
+      "target": "GTT-Knowledge-Map"
+    },
+    {
+      "source": "2026-02-24__15-29-38__both_interactive-dashboard-cards",
+      "target": "2026-02-24__14-24-35__both_cascading-recency-badge"
+    },
+    {
+      "source": "2026-02-24__15-29-38__both_interactive-dashboard-cards",
+      "target": "2026-02-24__14-41-49__full-postmortem_traffic-badges-and-version-consolidation"
+    },
+    {
+      "source": "2026-02-24__14-24-35__both_cascading-recency-badge",
+      "target": "2026-02-24__13-20-41__clone-download-badge-analysis"
+    },
+    {
+      "source": "2026-02-24__14-24-35__both_cascading-recency-badge",
+      "target": "2026-02-24__14-41-49__full-postmortem_traffic-badges-and-version-consolidation"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-25__22-08-39__both_feb24-clone-anomaly"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-25__03-08-58__ci-clone-subtraction-precision-analysis"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-25__14-08-29__full-postmortem_v0.7.9-organic-clones-and-dashboard-accuracy"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-26__20-12-34__claude_organic-first-principle"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-26__02-26-32__both_github-api-middot-encoding"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-25__12-30-18__full-postmortem_v0.7.9-traffic-workflow-fixes"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "2026-02-25__15-52-18__full-postmortem_v0.7.10-projection-and-data-expansion"
+    },
+    {
+      "source": "Data-Quality-and-Stats",
+      "target": "GTT-Knowledge-Map"
+    },
+    {
+      "source": "2026-02-25__22-08-39__both_feb24-clone-anomaly",
+      "target": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "2026-02-25__22-08-39__both_feb24-clone-anomaly",
+      "target": "2026-02-24__16-54-32__full-postmortem_v0.8.1-badges-dashboard-enhanced-stats-plan"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-25__02-55-42__full-postmortem_v0.7.8-tabbed-dashboard-port-and-ci-clone-inflation"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-25__03-08-58__ci-clone-subtraction-precision-analysis"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-25__12-30-18__full-postmortem_v0.7.9-traffic-workflow-fixes"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-25__14-08-29__full-postmortem_v0.7.9-organic-clones-and-dashboard-accuracy"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-25__22-08-39__both_feb24-clone-anomaly"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "Data-Quality-and-Stats"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_organic-first-principle",
+      "target": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "2026-02-26__14-33-24__gist-backend-scalability-and-free-tier-limits"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "2026-02-26__14-57-19__pluggable-tabs-external-registries-and-conversion-analytics"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "2026-02-25__14-08-29__full-postmortem_v0.7.9-organic-clones-and-dashboard-accuracy"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "gtt_issue_9_free_tier_limits_and_scalability"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_gist-first-architecture",
+      "target": "2026-02-26__14-30-44__both_workflow-trigger-chaining"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0",
+      "target": "2026-02-26__14-33-24__gist-backend-scalability-and-free-tier-limits"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0",
+      "target": "2026-02-26__14-30-44__both_workflow-trigger-chaining"
+    },
+    {
+      "source": "2026-02-26__20-12-34__claude_keepalive-mechanism-p0",
+      "target": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "source": "2026-02-26__02-26-32__both_github-api-middot-encoding",
+      "target": "2026-02-25__22-08-39__both_feb24-clone-anomaly"
+    },
+    {
+      "source": "2026-02-26__02-26-32__both_github-api-middot-encoding",
+      "target": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-26__20-12-34__claude_gist-first-architecture"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-26__20-12-34__claude_organic-first-principle"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-26__14-33-24__gist-backend-scalability-and-free-tier-limits"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-26__20-47-31__claude_project-ecosystem-map"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-25__12-37-21__solution-zero-implementation-plan"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-25__02-15-38__foss-reward-system-synthesis"
+    },
+    {
+      "source": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context",
+      "target": "2026-02-24__23-28-43__github-foss-monetization-strategy"
+    },
+    {
+      "source": "2026-02-26__20-47-31__claude_project-ecosystem-map",
+      "target": "2026-02-26__20-47-31__both_strategic-vision-and-ecosystem-context"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__12-41-40__both_setup-gists-variable-setting-gap"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__21-14-53__verbosity-logging-channels-integration"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__05-54-51__claude-plan__setup-script-templatization"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__11-49-44__full-postmortem_setup-gists-and-project-architecture"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-25__18-51-15__claude-plan__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-25__23-09-16__full-postmortem_stats-migration-phase1"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__14-30-44__both_workflow-trigger-chaining"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "2026-02-26__15-02-04__both_v0.1.3-roadmap-and-dazzlecmd"
+    },
+    {
+      "source": "Tooling-and-CLI",
+      "target": "GTT-Knowledge-Map"
+    },
+    {
+      "source": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture",
+      "target": "2026-02-26__05-54-51__claude-plan__setup-script-templatization"
+    },
+    {
+      "source": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture",
+      "target": "2026-02-26__12-41-40__both_setup-gists-variable-setting-gap"
+    },
+    {
+      "source": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture",
+      "target": "2026-02-26__11-49-44__full-postmortem_setup-gists-and-project-architecture"
+    },
+    {
+      "source": "2026-02-26__12-41-40__both_setup-gists-variable-setting-gap",
+      "target": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "source": "2026-02-26__14-30-44__both_workflow-trigger-chaining",
+      "target": "2026-02-26__12-41-40__both_setup-gists-variable-setting-gap"
+    },
+    {
+      "source": "2026-02-26__14-30-44__both_workflow-trigger-chaining",
+      "target": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "source": "2026-02-26__15-02-04__both_v0.1.3-roadmap-and-dazzlecmd",
+      "target": "2026-02-26__11-03-36__both_ghtraf-cli-pypi-architecture"
+    },
+    {
+      "source": "2026-02-26__15-02-04__both_v0.1.3-roadmap-and-dazzlecmd",
+      "target": "2026-02-26__05-54-51__claude-plan__setup-script-templatization"
+    },
+    {
+      "source": "2026-02-26__15-02-04__both_v0.1.3-roadmap-and-dazzlecmd",
+      "target": "2026-02-26__14-30-44__both_workflow-trigger-chaining"
+    },
+    {
+      "source": "2026-02-26__13-50-46__claude_obsidian-migration-from-source-projects",
+      "target": "GTT-Knowledge-Map"
+    },
+    {
+      "source": "2026-02-26__13-50-46__claude_obsidian-migration-from-source-projects",
+      "target": "2026-02-24__13-20-41__clone-download-badge-analysis"
+    },
+    {
+      "source": "2026-02-26__13-50-46__claude_obsidian-migration-from-source-projects",
+      "target": "2026-02-25__19-26-05__stats-migration-and-standalone-extraction"
+    },
+    {
+      "source": "2026-02-26__13-50-46__claude_obsidian-migration-from-source-projects",
+      "target": "2026-02-25__23-09-16__full-postmortem_stats-migration-phase1"
+    }
+  ]
+}

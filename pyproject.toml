@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-traffic-tracker"
+dynamic = ["version"]
+description = "Zero-server GitHub traffic analytics — daily collection via Actions, gist-backed storage, client-side dashboard"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Dustin", email = "6962246+djdarcy@users.noreply.github.com"},
+]
+keywords = [
+    "github", "traffic", "analytics", "badges", "gist",
+    "actions", "dashboard", "clones", "views", "stars",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/djdarcy/github-traffic-tracker"
+Repository = "https://github.com/djdarcy/github-traffic-tracker"
+Issues = "https://github.com/djdarcy/github-traffic-tracker/issues"
+Dashboard = "https://djdarcy.github.io/github-traffic-tracker/stats/"
+
+[project.scripts]
+ghtraf = "ghtraf.cli:main"
+github-traffic-tracker = "ghtraf.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ghtraf._version.PIP_VERSION"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ghtraf*"]
+
+[tool.setuptools.package-data]
+ghtraf = ["templates/*"]

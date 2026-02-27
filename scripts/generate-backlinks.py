@@ -94,14 +94,40 @@ def build_indices(vault_root: Path) -> tuple[dict, dict, dict]:
         - file_index: {stem: Path}
     """
     file_index: dict[str, Path] = {}
+    # Also map relative paths (e.g. "notes/bugs/filename") to stems
+    # so path-prefixed wikilinks like [[notes/bugs/filename|alias]] resolve
+    path_to_stem: dict[str, str] = {}
     for f in sorted(vault_root.rglob('*.md')):
         file_index[f.stem] = f
+        # Register relative path variants (without .md extension)
+        rel = f.relative_to(vault_root).with_suffix('')
+        rel_posix = rel.as_posix()  # normalize to forward slashes
+        path_to_stem[rel_posix] = f.stem
+        # Also register with backslashes for Windows-authored links
+        path_to_stem[str(rel).replace('\\', '/')] = f.stem
+
+    def resolve_target(target: str) -> str | None:
+        """Resolve a wikilink target to a file stem, supporting both
+        stem-only ('filename') and path-prefixed ('notes/bugs/filename') formats."""
+        # Direct stem match
+        if target in file_index:
+            return target
+        # Path-prefixed match
+        normalized = target.replace('\\', '/')
+        if normalized in path_to_stem:
+            return path_to_stem[normalized]
+        return None
 
     forward: dict[str, list[str]] = {}
     for stem, fpath in file_index.items():
         text = fpath.read_text(encoding='utf-8', errors='ignore')
-        links = parse_wikilinks(text)
-        forward[stem] = links
+        raw_targets = parse_wikilinks(text)
+        # Resolve each target to a stem (or keep raw for broken-link detection)
+        resolved = []
+        for t in raw_targets:
+            r = resolve_target(t)
+            resolved.append(r if r is not None else t)
+        forward[stem] = resolved
 
     backlinks: dict[str, list[str]] = {stem: [] for stem in file_index}
     for source, targets in forward.items():
@@ -186,9 +212,9 @@ def validate_against_obsidiantools(vault_root: Path, our_backlinks: dict):
     try:
         import obsidiantools.api as otools
     except ImportError:
-        print('Error: obsidiantools is required for --validate. '
+        print('Note: obsidiantools not installed, skipping cross-validation. '
               'Install with: pip install obsidiantools', file=sys.stderr)
-        sys.exit(1)
+        return
 
     print('Running obsidiantools for cross-validation...')
     vault = otools.Vault(vault_root).connect()
@@ -294,10 +320,8 @@ def main():
     # Build indices
     forward, backlinks, file_index = build_indices(vault_root)
 
-    # Cross-validation mode
-    if args.validate:
-        validate_against_obsidiantools(vault_root, backlinks)
-        return
+    # Cross-validation (runs after normal output, not instead of it)
+    run_validation = args.validate
 
     # Handle action flags
     if args.json:
@@ -355,6 +379,10 @@ def main():
         print('\nTop 5 most referenced:')
         for name, sources in sorted_bl:
             print(f'  {len(sources):3d} <- {name}')
+
+        if run_validation:
+            print()
+            validate_against_obsidiantools(vault_root, backlinks)
         return
 
     # Default: generate _oracle/backlinks.md
@@ -379,6 +407,10 @@ def main():
     total_bl = sum(len(v) for v in backlinks.values())
     print(f'Wrote {out_path}')
     print(f'  {len(file_index)} files scanned, {with_bl} notes with backlinks, {total_bl} link edges')
+
+    if run_validation:
+        print()
+        validate_against_obsidiantools(vault_root, backlinks)
 
 
 if __name__ == '__main__':

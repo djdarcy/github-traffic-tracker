@@ -82,6 +82,63 @@ jobs:
               }
             }
 
+            // 2.5 Schema migration
+            // Schema versions: 1 = boolean dedup, 2 = delta maps, 3 = totalOrganicClones
+            const CURRENT_SCHEMA = 3;
+            const stateVersion = state.schemaVersion || 1;
+
+            // v1 → v2: Migrate boolean lastSeenDates to delta-based lastSeenCloneCounts
+            if (stateVersion < 2) {
+              if (!state.lastSeenCloneCounts) {
+                state.lastSeenCloneCounts = {};
+                if (Array.isArray(state.lastSeenDates) && state.lastSeenDates.length > 0) {
+                  const histByDate = {};
+                  for (const entry of (state.dailyHistory || [])) {
+                    histByDate[entry.date.slice(0, 10)] = entry;
+                  }
+                  for (const ts of state.lastSeenDates) {
+                    const d = ts.slice(0, 10);
+                    const hist = histByDate[d];
+                    state.lastSeenCloneCounts[d] = hist ? (hist.clones || 0) : 0;
+                  }
+                }
+              }
+              if (!state.lastSeenViewCounts) {
+                state.lastSeenViewCounts = {};
+                if (Array.isArray(state.lastSeenViewDates) && state.lastSeenViewDates.length > 0) {
+                  const histByDate = {};
+                  for (const entry of (state.dailyHistory || [])) {
+                    histByDate[entry.date.slice(0, 10)] = entry;
+                  }
+                  for (const ts of state.lastSeenViewDates) {
+                    const d = ts.slice(0, 10);
+                    const hist = histByDate[d];
+                    state.lastSeenViewCounts[d] = hist ? (hist.views || 0) : 0;
+                  }
+                }
+              }
+              console.log(`Schema migration v1 → v2: delta-based dedup maps`);
+            }
+
+            // v2 → v3: Compute totalOrganicClones from dailyHistory
+            // Previously badges used totalClones - totalCiCheckouts (global subtraction)
+            // which allows phantom CI on zero-clone days to reduce organic below
+            // individual day values. Now we accumulate per-day organic instead.
+            if (stateVersion < 3) {
+              const histOrganic = (state.dailyHistory || []).reduce(
+                (sum, d) => sum + (d.organicClones || d.clones || 0), 0
+              );
+              // For repos tracked longer than dailyHistory window, preserve
+              // the higher estimate from global subtraction
+              const globalOrganic = Math.max(0,
+                (state.totalClones || 0) - (state.totalCiCheckouts || 0)
+              );
+              state.totalOrganicClones = Math.max(histOrganic, globalOrganic);
+              console.log(`Schema migration v2 → v3: totalOrganicClones = ${state.totalOrganicClones}`);
+            }
+
+            state.schemaVersion = CURRENT_SCHEMA;
+
             // 3. Accumulate clones (delta-based: track last-seen counts per date)
             // The Traffic API returns 14 days of data, including zero-count days.
             // We track the last-seen count for each date so we only accumulate the
@@ -93,22 +150,7 @@ jobs:
             let clonesByDate = {};
             let uniqueClonesByDate = {};
 
-            // Migrate from legacy lastSeenDates (array of timestamps) to
-            // lastSeenCloneCounts (object mapping date -> count)
-            if (!state.lastSeenCloneCounts) {
-              state.lastSeenCloneCounts = {};
-              if (Array.isArray(state.lastSeenDates) && state.lastSeenDates.length > 0) {
-                const histByDate = {};
-                for (const entry of (state.dailyHistory || [])) {
-                  histByDate[entry.date.slice(0, 10)] = entry;
-                }
-                for (const ts of state.lastSeenDates) {
-                  const d = ts.slice(0, 10);
-                  const hist = histByDate[d];
-                  state.lastSeenCloneCounts[d] = hist ? (hist.clones || 0) : 0;
-                }
-              }
-            }
+            if (!state.lastSeenCloneCounts) state.lastSeenCloneCounts = {};
             if (!state._lastSeenUniqueClones) state._lastSeenUniqueClones = {};
 
             try {
@@ -153,21 +195,7 @@ jobs:
             let viewsByDate = {};
             let uniqueViewsByDate = {};
 
-            // Migrate from legacy lastSeenViewDates to lastSeenViewCounts
-            if (!state.lastSeenViewCounts) {
-              state.lastSeenViewCounts = {};
-              if (Array.isArray(state.lastSeenViewDates) && state.lastSeenViewDates.length > 0) {
-                const histByDate = {};
-                for (const entry of (state.dailyHistory || [])) {
-                  histByDate[entry.date.slice(0, 10)] = entry;
-                }
-                for (const ts of state.lastSeenViewDates) {
-                  const d = ts.slice(0, 10);
-                  const hist = histByDate[d];
-                  state.lastSeenViewCounts[d] = hist ? (hist.views || 0) : 0;
-                }
-              }
-            }
+            if (!state.lastSeenViewCounts) state.lastSeenViewCounts = {};
             if (!state._lastSeenUniqueViews) state._lastSeenUniqueViews = {};
 
             try {
@@ -464,6 +492,14 @@ jobs:
               entry.organicUniqueClones = Math.max(0, rawUnique - ciUniqueClones);
             }
 
+            // Accumulate totalOrganicClones (per-day organic, avoids phantom CI subtraction)
+            // Uses delta: today's organic - previously stored organic for today
+            const previousOrganicToday = state._previousOrganicToday || 0;
+            const todayOrganic = todayEntry.organicClones || 0;
+            state.totalOrganicClones = (state.totalOrganicClones || 0) + (todayOrganic - previousOrganicToday);
+            state._previousOrganicToday = todayOrganic;
+            console.log(`Organic clones: today=${todayOrganic}, total=${state.totalOrganicClones}`);
+
             // Accumulate totalOrganicUniqueClones
             // Uses same delta approach as totalUniqueClones: track CI unique adjustment for today,
             // then subtract cumulative CI uniques from cumulative raw uniques
@@ -502,6 +538,12 @@ jobs:
             if ((state.totalUniqueViews || 0) < histUniqueViews) {
               console.log(`Totals repair: totalUniqueViews ${state.totalUniqueViews} -> ${histUniqueViews}`);
               state.totalUniqueViews = histUniqueViews;
+            }
+            // Sanity check totalOrganicClones
+            const histOrganic = state.dailyHistory.reduce((s, d) => s + (d.organicClones || d.clones || 0), 0);
+            if ((state.totalOrganicClones || 0) < histOrganic) {
+              console.log(`Totals repair: totalOrganicClones ${state.totalOrganicClones} -> ${histOrganic}`);
+              state.totalOrganicClones = histOrganic;
             }
             // Recompute organic unique clones after any totals repair
             state.totalOrganicUniqueClones = Math.max(0,
@@ -545,7 +587,7 @@ jobs:
               prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
               const period = prevMonth.toISOString().slice(0, 7);
 
-              const archiveOrganicClones = Math.max(0, state.totalClones - (state.totalCiCheckouts || 0));
+              const archiveOrganicClones = state.totalOrganicClones || 0;
               const archive = {
                 repo: `${owner}/${repo}`,
                 period: period,
@@ -587,7 +629,8 @@ jobs:
             }
 
             // 10. Build shields.io endpoint JSON badges (organic clones only)
-            const organicTotalClones = Math.max(0, state.totalClones - (state.totalCiCheckouts || 0));
+            // Use per-day accumulated organic (avoids phantom CI subtraction)
+            const organicTotalClones = state.totalOrganicClones || 0;
             const combined = state.totalDownloads + organicTotalClones;
             const dlsClonesBadge = {
               schemaVersion: 1,

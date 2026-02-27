@@ -1,6 +1,6 @@
 # GitHub Traffic Tracker
 
-[![Version][version-badge]][version-url] [![Python 3.10+][python-badge]][python-url] [![License][license-badge]][license-url] [![Platform][platform-badge]][platform-url]
+[![Version][version-badge]][version-url] [![Python 3.10+][python-badge]][python-url] [![License][license-badge]][license-url] [![GitHub Discussions][discussions-badge]][discussions-url] [![Platform][platform-badge]][platform-url]
 
 Zero-server GitHub traffic analytics — daily collection, permanent history, smart badges.
 
@@ -32,7 +32,7 @@ A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download,
 - **Permanent history** — Accumulates beyond the 14-day API window indefinitely
 - **Unique visitor tracking** — Unique cloners and viewers alongside raw counts
 - **CI clone detection** — Separates organic clones from CI/CD checkout noise
-- **Cascading recency badges** — `installs 1,234 (+18 24h)` → `(+12 wk)` → `(+45 mo)`
+- **Cascading recency badges** — `installs 1,234 (+18 24h)` → `(+88 wk)` → `(+145 mo)`
 - **Tabbed dashboard** — Overview, Installs, Views, Community, Dev tabs
 - **Monthly archives** — Long-term snapshots in a separate unlisted Gist
 - **Zero server** — Pure GitHub Actions + Gist storage + client-side rendering
@@ -126,5 +126,7 @@ This project is licensed under the GNU General Public License v3.0 — see [LICE
 [python-url]: https://www.python.org/downloads/
 [license-badge]: https://img.shields.io/badge/License-GPLv3-blue.svg
 [license-url]: https://www.gnu.org/licenses/gpl-3.0
+[discussions-badge]: https://img.shields.io/github/discussions/djdarcy/github-traffic-tracker
+[discussions-url]: https://github.com/djdarcy/github-traffic-tracker/discussions
 [platform-badge]: https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg
 [platform-url]: docs/platform-support.md

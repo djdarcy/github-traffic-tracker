@@ -308,19 +308,20 @@ jobs:
               entry.capturedAt = capturedAt;
               if (clonesByDate[dateStr] !== undefined) {
                 entry.clones = Math.max(entry.clones || 0, clonesByDate[dateStr]);
-                // Only write uniqueClones when API reports a positive value.
-                // API returns 0 for expired unique data — don't overwrite
-                // real data with false zeros or create zeros from nothing.
-                const apiUniqueClones = uniqueClonesByDate[dateStr] || 0;
-                if (apiUniqueClones > 0) {
-                  entry.uniqueClones = Math.max(entry.uniqueClones || 0, apiUniqueClones);
+                // Write uniqueClones when API returned data for this date.
+                // The API includes both count and uniques for every date in
+                // its 14-day window, so if clonesByDate has this date,
+                // uniqueClonesByDate does too. Accept zeros — they mean
+                // "no unique cloners today", not "expired data". Math.max
+                // protects against overwriting a real value with a stale zero.
+                if (uniqueClonesByDate[dateStr] !== undefined) {
+                  entry.uniqueClones = Math.max(entry.uniqueClones || 0, uniqueClonesByDate[dateStr]);
                 }
               }
               if (viewsByDate[dateStr] !== undefined) {
                 entry.views = Math.max(entry.views || 0, viewsByDate[dateStr]);
-                const apiUniqueViews = uniqueViewsByDate[dateStr] || 0;
-                if (apiUniqueViews > 0) {
-                  entry.uniqueViews = Math.max(entry.uniqueViews || 0, apiUniqueViews);
+                if (uniqueViewsByDate[dateStr] !== undefined) {
+                  entry.uniqueViews = Math.max(entry.uniqueViews || 0, uniqueViewsByDate[dateStr]);
                 }
               }
               // Only set stars/forks/openIssues for today — these are
@@ -334,9 +335,10 @@ jobs:
             }
 
             // Always ensure today's entry exists to prove the script ran.
-            // Don't set uniqueClones/uniqueViews to 0 — leave undefined so
-            // the dashboard shows a gap rather than a false zero. These fields
-            // get filled when the Traffic API catches up (next run).
+            // Don't set uniqueClones/uniqueViews here — if the API returned
+            // data for today, the loop above already wrote them (including
+            // valid zeros). If it didn't, leaving them undefined signals
+            // "no data collected" vs "zero visitors" — gap detection.
             if (!existingByDate[todayStr]) {
               const todayEntry = {
                 date: todayStr + "T00:00:00Z",

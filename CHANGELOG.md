@@ -5,6 +5,21 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4-alpha] - 2026-02-27
+
+Fix false-zero suppression and badge color refresh.
+
+### Fixed
+- **Unique clones/views false-zero suppression** — The `> 0` gate rejected
+  valid zero values from the Traffic API within its 14-day window, omitting
+  `uniqueClones`/`uniqueViews` fields entirely for zero-traffic days. Changed
+  to `!== undefined` so zero means "no visitors" (stored) vs undefined means
+  "no data collected" (gap). Math.max still prevents overwriting real values.
+
+### Changed
+- README badge colors: Python badge `darkgreen` (was blue), license badge
+  consistent casing, platform badge drops `.svg` suffix
+
 ## [0.2.3-alpha] - 2026-02-27
 
 Patch: organic double-count guard, mermaid rendering fix, missing changelog.

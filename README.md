@@ -24,7 +24,7 @@ flowchart LR
     B -->|"shields.io endpoint"| E["Badges<br/>README / anywhere"]
 ```
 
-A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download, star, and referrer data from the GitHub API. It merges new data into a running `state.json` stored in a public Gist, always preserving the highest values seen (merge upward, never erase). Shields.io-compatible badge JSON files are updated alongside the state. A separate unlisted Gist receives monthly archive snapshots for long-term storage. The static HTML dashboard reads directly from the Gist CDN — no backend, no hosting, no cost.
+A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download, star, and referrer data from the GitHub API. It merges new data into a running `state.json` stored in a public Gist, always preserving the highest values seen (merge upward, never erase). Shields.io-compatible badge JSON files are updated alongside the state. A separate unlisted Gist receives monthly archive snapshots for long-term storage. The static HTML dashboard reads directly from the Gist CDN, completing the loop with no backend at all.
 
 ## Features
 
@@ -122,11 +122,11 @@ This project is licensed under the GNU General Public License v3.0 — see [LICE
 [clones-url]: https://djdarcy.github.io/github-traffic-tracker/stats/#clones
 [downloads-badge]: https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/djdarcy/fffb1b8632243b40ad183a161ff0f32e/raw/downloads.json
 [downloads-url]: https://djdarcy.github.io/github-traffic-tracker/stats/#installs
-[python-badge]: https://img.shields.io/badge/python-3.10+-blue.svg
+[python-badge]: https://img.shields.io/badge/python-3.10+-darkgreen
 [python-url]: https://www.python.org/downloads/
-[license-badge]: https://img.shields.io/badge/License-GPLv3-blue.svg
+[license-badge]: https://img.shields.io/badge/license-GPLv3-blue
 [license-url]: https://www.gnu.org/licenses/gpl-3.0
 [discussions-badge]: https://img.shields.io/github/discussions/djdarcy/github-traffic-tracker
 [discussions-url]: https://github.com/djdarcy/github-traffic-tracker/discussions
-[platform-badge]: https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg
+[platform-badge]: https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey
 [platform-url]: docs/platform-support.md

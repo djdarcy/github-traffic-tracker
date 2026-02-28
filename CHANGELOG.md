@@ -5,6 +5,34 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6-alpha] - 2026-02-28
+
+Package-embed templates and dashboard bug fixes.
+
+### Added
+- **Package-embedded templates** (#27) — Dashboard, README, and workflow
+  templates shipped in `src/ghtraf/templates/` with placeholder tokens for
+  `configure.py` round-trip. Enables `ghtraf init` to copy clean templates
+  without GTT-specific values.
+- Favicon (`docs/stats/favicon.svg`) — SVG chart icon for dashboard tab
+- 40 new template tests (`test_templates.py`) — structure verification,
+  placeholder presence, GTT-value absence, bug-fix regression, pyproject
+  glob, and configure round-trip (133 total tests)
+
+### Fixed
+- **Community Trends negative y-axis** (#25) — `beginAtZero: false` on the
+  community chart's left y-axis caused -1 display when all star values were 0.
+  Changed to `beginAtZero: true`.
+- **Organic clone formula divergence** — Live dashboard still used inline
+  `totalClones - totalCiCheckouts` (old formula) instead of accumulated
+  `state.totalOrganicClones` (new field from v0.2.2). Updated two locations
+  in `docs/stats/index.html`.
+
+### Changed
+- `pyproject.toml` template glob: `templates/*` → `templates/**/*` (recursive)
+- `src/ghtraf/_version.py` synced to PATCH=6 (was stuck at PATCH=0 since v0.2.0)
+- Version bump 0.2.5 → 0.2.6
+
 ## [0.2.5-alpha] - 2026-02-28
 
 Fix zero-traffic days missing uniqueClones/uniqueViews in dailyHistory.

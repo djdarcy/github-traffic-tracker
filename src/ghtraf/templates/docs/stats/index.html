@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Traffic Tracker - Project Statistics</title>
+    <title>PLACEHOLDER - Project Statistics</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
             onerror="document.getElementById('chart-fallback').classList.remove('hidden')"></script>
@@ -494,8 +494,8 @@
 <body>
     <div class="container">
         <header>
-            <a href="https://github.com/djdarcy/github-traffic-tracker" class="banner-link">
-                <p class="banner-title">GitHub Traffic Tracker</p>
+            <a href="https://github.com/OWNER/REPO" class="banner-link">
+                <p class="banner-title">PLACEHOLDER</p>
                 <p class="banner-arrow">View repository &rarr;</p>
             </a>
             <h1>Project Statistics</h1>
@@ -884,8 +884,8 @@
         <footer>
             <p>Data updates daily at 3:00 AM UTC &middot; Last data point: <span id="last-updated">--</span></p>
             <p>
-                <a href="https://github.com/djdarcy/github-traffic-tracker">Repository</a> &middot;
-                <a href="https://github.com/djdarcy/github-traffic-tracker/releases">Releases</a>
+                <a href="https://github.com/OWNER/REPO">Repository</a> &middot;
+                <a href="https://github.com/OWNER/REPO/releases">Releases</a>
             </p>
             <aside class="privacy-note">
                 <strong>Privacy</strong> &mdash; This tool contains no telemetry or tracking of any kind.
@@ -901,13 +901,13 @@
 
     <script>
         // Configuration
-        const GIST_RAW_BASE = 'https://gist.githubusercontent.com/djdarcy/fffb1b8632243b40ad183a161ff0f32e/raw';
+        const GIST_RAW_BASE = 'https://gist.githubusercontent.com/USER/GISTID/raw';
         const STATE_URL = GIST_RAW_BASE + '/state.json';
-        const ARCHIVE_GIST_ID = 'e5b433950e400fb713109a90ab49a2f7';
+        const ARCHIVE_GIST_ID = 'ARCHIVEID';
         const ARCHIVE_API_URL = 'https://api.github.com/gists/' + ARCHIVE_GIST_ID;
-        const REPO_OWNER = 'djdarcy';
-        const REPO_NAME = 'github-traffic-tracker';
-        const REPO_CREATED = '2026-02-26'; // for project age calculation
+        const REPO_OWNER = 'OWNER';
+        const REPO_NAME = 'REPO';
+        const REPO_CREATED = '2025-01-01'; // for project age calculation
         var primaryAuthor = null; // resolved from contributors API (org-owned repos have owner=org, not committer)
 
         // State

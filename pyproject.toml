@@ -42,4 +42,4 @@ where = ["src"]
 include = ["ghtraf*"]
 
 [tool.setuptools.package-data]
-ghtraf = ["templates/*"]
+ghtraf = ["templates/**/*"]

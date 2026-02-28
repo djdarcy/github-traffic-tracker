@@ -12,26 +12,26 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 # Change to repository root for script execution
 cd "$REPO_ROOT" 2>/dev/null || true
 
-# PART 1: Update version.py (Two-Phase Process)
-# -----------------------------------------------
-# Pre-commit: Updates version with current commit hash, auto-stages if changed
-# Post-commit: Updates version with new commit hash (leaves unstaged for next commit)
-UPDATE_SCRIPT="$REPO_ROOT/scripts/update-version.sh"
-if [ -f "$UPDATE_SCRIPT" ]; then
-    # Run in auto mode to update version before commit
-    # Capture output to check if it's just "already up to date"
-    UPDATE_OUTPUT=$("$UPDATE_SCRIPT" --auto 2>&1)
+# PART 1: Sync all version files (Two-Phase Process)
+# ---------------------------------------------------
+# Pre-commit: Updates version strings with current git metadata, auto-stages
+# Post-commit: Updates with actual commit hash (leaves unstaged for next commit)
+SYNC_SCRIPT="$REPO_ROOT/scripts/sync-versions.py"
+if [ -f "$SYNC_SCRIPT" ]; then
+    # Run in auto mode — quiet, stages files, uses today's date
+    UPDATE_OUTPUT=$(python "$SYNC_SCRIPT" --auto 2>&1)
     UPDATE_EXIT=$?
-    
+
     if [ $UPDATE_EXIT -eq 0 ]; then
-        # Success - always stage version.py to ensure it's included in this commit
-        git add version.py
-        echo "✓ Version updated and staged for commit"
+        # Stage all version files to ensure they're included in this commit
+        git add version.py src/ghtraf/_version.py 2>/dev/null
+        # Stage alias toml only if it exists and changed
+        if [ -f "packages/ghtraf-alias/pyproject.toml" ]; then
+            git add packages/ghtraf-alias/pyproject.toml 2>/dev/null
+        fi
+        echo "✓ Version synced and staged for commit"
     else
-        # Real error occurred
-        echo "⚠ Warning: Version update failed but continuing"
-        # Optionally show the error in verbose mode
-        # echo "  Error: $UPDATE_OUTPUT"
+        echo "⚠ Warning: Version sync failed but continuing"
     fi
 fi
 

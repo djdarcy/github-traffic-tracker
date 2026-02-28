@@ -1,0 +1,84 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: Build packages
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build main package (github-traffic-tracker)
+      run: python -m build --outdir dist/main/
+
+    - name: Build alias package (ghtraf)
+      run: python -m build packages/ghtraf-alias/ --outdir dist/alias/
+
+    - name: Check packages
+      run: |
+        twine check dist/main/*
+        twine check dist/alias/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist-main
+        path: dist/main/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist-alias
+        path: dist/alias/
+
+  publish-main:
+    name: Publish github-traffic-tracker
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/github-traffic-tracker
+
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist-main
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-alias:
+    name: Publish ghtraf
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ghtraf
+
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist-alias
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

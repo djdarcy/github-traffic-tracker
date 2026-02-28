@@ -5,6 +5,25 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8-alpha] - 2026-02-28
+
+PyPI publishing infrastructure.
+
+### Added
+- **PyPI publish workflow** (`.github/workflows/publish.yml`) — trusted
+  publisher (OIDC) workflow triggered on version tag push (`v*`). Three-job
+  design: build → publish-main → publish-alias, with `environment: pypi`
+  approval gate before each upload.
+- **`ghtraf` alias package** (`packages/ghtraf-alias/`) — thin wrapper
+  that depends on `github-traffic-tracker`. `pip install ghtraf` and
+  `pip install github-traffic-tracker` both install the same tool.
+- Trove classifiers on main `pyproject.toml` for PyPI discoverability
+
+### Changed
+- License format: TOML table → SPDX expression string (setuptools
+  deprecation fix)
+- Version bump 0.2.7 → 0.2.8
+
 ## [0.2.7-alpha] - 2026-02-28
 
 Gist naming convention for discoverability.

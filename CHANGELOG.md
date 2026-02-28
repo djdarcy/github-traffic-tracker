@@ -5,6 +5,54 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3-alpha] - 2026-02-27
+
+Patch: organic double-count guard, mermaid rendering fix, missing changelog.
+
+### Fixed
+- **Organic double-count guard** — First run after v2→v3 schema migration
+  could double-count today's organic clones (migration seeds `totalOrganicClones`
+  from `dailyHistory` which may include today, then accumulation adds today again
+  because `_previousOrganicToday` was `undefined` → `0`). Now skips accumulation
+  on first run when `_previousOrganicToday` is undefined.
+- README Mermaid diagram — `\n` replaced with `<br/>` for correct rendering
+  on GitHub (literal `\n` displayed as text instead of line breaks)
+
+### Added
+- Missing CHANGELOG entry for v0.2.2-alpha
+- Early-dev note in CLAUDE.md — skip deprecation formalities during alpha
+
+## [0.2.2-alpha] - 2026-02-27
+
+Schema v3 organic clones, downstream port, and community health files.
+
+### Fixed
+- **Organic clone badge math** — Per-day organic accumulation (`totalOrganicClones`)
+  replaces global subtraction (`totalClones - totalCiCheckouts`) which allowed
+  phantom CI on zero-clone days to reduce organic below individual day values
+- Backlink path resolution — `[[notes/bugs/filename|alias]]` wikilinks now
+  resolve correctly alongside bare `[[filename]]` links in `generate-backlinks.py`
+- `--validate` in `generate-backlinks.py` is non-fatal (graceful when
+  obsidiantools not installed) and runs after normal output
+
+### Added
+- Schema v3 migration (section 2.5): computes `totalOrganicClones` from
+  `dailyHistory` (takes max of per-day sum vs legacy global subtraction)
+- Consolidated schema migration section 2.5 (v1→v2 and v2→v3 in one place)
+- Sanity check for `totalOrganicClones` in totals repair section
+- Per-day organic delta tracking (`_previousOrganicToday` state field)
+- RepoKit community files: CODEOWNERS, FUNDING.yml, dependabot.yml,
+  stale.yml, bug-report and feature-request templates, PR template
+- GitHub Discussions badge in README header row
+
+### Changed
+- Badge output uses `state.totalOrganicClones` instead of inline subtraction
+- Monthly archive uses `state.totalOrganicClones` for organic clone count
+
+### Removed
+- `setup.py` (replaced by `pyproject.toml` in v0.2.0)
+- Inline v1→v2 migration blocks from clone/view sections (moved to 2.5)
+
 ## [0.2.1-alpha] - 2026-02-27
 
 README redesign, workflow bug fix, and project documentation.

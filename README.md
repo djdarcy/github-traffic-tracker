@@ -18,13 +18,13 @@ GitHub Traffic Tracker solves this with zero infrastructure via a GitHub Actions
 
 ```mermaid
 flowchart LR
-    A["GitHub Actions\ndaily · 3am UTC"] -->|"clones · views\ndownloads · stars"| B["Public Gist\nstate.json + badges"]
-    A -->|"monthly"| C["Archive Gist\nlong-term snapshots"]
-    B -->|"client-side fetch"| D["Dashboard\nGitHub Pages"]
-    B -->|"shields.io endpoint"| E["Badges\nREADME / anywhere"]
+    A["GitHub Actions<br/>daily · 3am UTC"] -->|"clones · views<br/>downloads · stars"| B["Public Gist<br/>state.json + badges"]
+    A -->|"monthly"| C["Archive Gist<br/>long-term snapshots"]
+    B -->|"client-side fetch"| D["Dashboard<br/>GitHub Pages"]
+    B -->|"shields.io endpoint"| E["Badges<br/>README / anywhere"]
 ```
 
-A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download, star, and referrer data from the GitHub API. It merges new data into a running `state.json` stored in a public Gist, always preserving the highest values seen (merge upward, never erase). Shields.io-compatible badge JSON files are updated alongside the state. A separate unlisted Gist receives monthly archive snapshots for long-term storage. The static HTML dashboard reads directly from the Gist CDN — so again no backend needed!
+A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download, star, and referrer data from the GitHub API. It merges new data into a running `state.json` stored in a public Gist, always preserving the highest values seen (merge upward, never erase). Shields.io-compatible badge JSON files are updated alongside the state. A separate unlisted Gist receives monthly archive snapshots for long-term storage. The static HTML dashboard reads directly from the Gist CDN — no backend, no hosting, no cost.
 
 ## Features
 

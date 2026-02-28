@@ -1,0 +1,35 @@
+name: "Exp 09: Pages Build"
+# Day 9 — Does GitHub Pages deployment produce hidden clones beyond
+# the detected actions/checkout step?
+# Procedure:
+#   1. Enable Pages on testbed repo (Settings > Pages > main branch /docs)
+#   2. Trigger this workflow to create/update docs/index.html
+#   3. This triggers pages build and deployment automatically
+#   4. Observe: how many clones does the Pages pipeline produce?
+# After experiment: DISABLE Pages to prevent contamination on later days.
+on: workflow_dispatch
+
+jobs:
+  pages-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Pages content
+        run: |
+          mkdir -p docs
+          cat > docs/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html><head><title>Testbed</title></head>
+          <body><h1>CI Clone Testbed</h1><p>Experiment 09 — Pages Build</p></body>
+          </html>
+          HTML
+          echo "=== Experiment 09: Pages Build ==="
+          echo "Created docs/index.html to trigger Pages deployment."
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "Exp 09: Pages content"
+          git push

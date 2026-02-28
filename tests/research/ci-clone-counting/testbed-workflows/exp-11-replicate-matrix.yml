@@ -1,0 +1,25 @@
+name: "Exp 11: Replicate Matrix 3x3"
+# Day 11 — Repeatability validation for Exp 05.
+# Identical to exp-05 to test if results are deterministic.
+# Hypothesis: Same delta as Day 5 (expected: +9 clones, +1 unique)
+# If result differs from Day 5, measurement has stochastic component.
+on: workflow_dispatch
+
+jobs:
+  matrix-job:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dim1: [a, b, c]
+        dim2: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report
+        run: |
+          echo "=== Experiment 11: Replicate Matrix 3x3 ==="
+          echo "Identical to Exp 05 — repeatability validation."
+          echo "Matrix cell: dim1=${{ matrix.dim1 }}, dim2=${{ matrix.dim2 }}"
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"

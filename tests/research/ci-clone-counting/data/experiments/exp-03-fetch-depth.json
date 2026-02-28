@@ -1,0 +1,40 @@
+{
+  "id": "exp-03",
+  "name": "Fetch Depth Variation",
+  "date": null,
+  "day": 3,
+  "question": "Does fetch-depth=0 (full clone) produce a different count than fetch-depth=1 (shallow)?",
+  "hypothesis": {
+    "expected_clone_delta": 1,
+    "expected_unique_delta": 0,
+    "reasoning": "fetch-depth changes how much history is fetched but the clone event itself should be counted the same way. Expected: same delta as Day 2. Unique delta 0 because the same bot identity ran on Day 2."
+  },
+  "actions": {
+    "workflow": "exp-03-fetch-depth.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 1,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "Run with fetch-depth=0 (full history). Compare delta to Day 2 baseline."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 1, "predicted_ci_unique": 0 },
+    "multiplier_1.5x": { "predicted_ci_clones": 2, "predicted_ci_unique": 0 },
+    "multiplier_2.0x": { "predicted_ci_clones": 2, "predicted_ci_unique": 0 },
+    "unique_per_day":  { "predicted_ci_clones": 1, "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 1, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Note: unique_per_day predicts +1 unique (new day), current/multiplier predict +0 (same bot). This experiment differentiates unique formulas."
+  }
+}

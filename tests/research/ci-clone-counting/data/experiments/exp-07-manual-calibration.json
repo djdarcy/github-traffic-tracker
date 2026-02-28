@@ -1,0 +1,40 @@
+{
+  "id": "exp-07",
+  "name": "Manual Clone Calibration",
+  "date": null,
+  "day": 7,
+  "question": "Does a manual git clone from a local machine produce exactly +1 clone, +1 unique?",
+  "hypothesis": {
+    "expected_clone_delta": 1,
+    "expected_unique_delta": 1,
+    "reasoning": "A human git clone should be unambiguous: 1 clone, 1 unique (different identity from CI bot). This validates the measurement system end-to-end with a known signal."
+  },
+  "actions": {
+    "workflow": null,
+    "dispatches": 0,
+    "jobs_per_dispatch": 0,
+    "checkouts_per_job": 0,
+    "total_expected_checkouts": 0,
+    "manual_clones": 1,
+    "trigger_time_utc": null,
+    "notes": "git clone https://github.com/djdarcy/gtt-ci-clone-testbed.git /tmp/cal — then delete. No workflow triggers."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 0, "predicted_ci_unique": 0, "predicted_organic_delta": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0, "predicted_organic_delta": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0, "predicted_organic_delta": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 0, "predicted_ci_unique": 0, "predicted_organic_delta": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 0, "predicted_ci_unique": 0, "predicted_organic_delta": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Calibration experiment — no CI activity. All formulas agree on 0 CI clones. Tests that the measurement system detects a known human clone."
+  }
+}

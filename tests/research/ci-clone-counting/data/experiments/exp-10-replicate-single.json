@@ -1,0 +1,40 @@
+{
+  "id": "exp-10",
+  "name": "Replicate: Single Checkout",
+  "date": null,
+  "day": 10,
+  "replicate_of": "exp-02",
+  "question": "Repeatability validation — does a single checkout produce the same delta as Day 2?",
+  "hypothesis": {
+    "expected_clone_delta": 1,
+    "expected_unique_delta": 1,
+    "reasoning": "Identical to Exp 02. If results match, the system is deterministic. If they differ, there is stochastic variance in GitHub's counting."
+  },
+  "actions": {
+    "workflow": "exp-10-replicate-single.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 1,
+    "manual_clones": 0,
+    "trigger_time_utc": null
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 1,  "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 2,  "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 2,  "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 1,  "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 1,  "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Replicate of exp-02. Compare delta to Day 2 for determinism assessment."
+  }
+}

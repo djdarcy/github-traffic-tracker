@@ -5,6 +5,62 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.9-alpha] - 2026-02-28
+
+CI clone testbed — 12-experiment research framework to empirically determine
+how GitHub's Traffic API counts clones from Actions workflows (#49).
+
+### Added
+- **CI clone testbed** (`tests/research/ci-clone-counting/`) — controlled
+  experiment suite using a private repo (`djdarcy/gtt-ci-clone-testbed`)
+  created entirely via GitHub API to ensure zero clone contamination.
+  A zero-contamination observer (curl + Contents API, no `actions/checkout`
+  or `git push`) captures daily Traffic API snapshots.
+- **12 experiments** (one per UTC day) test progressively harder questions:
+  - Day 0: Baseline — does API-only setup register zero clones?
+  - Day 1: No checkout — does a bare workflow produce clones?
+  - Day 2: Single checkout — is 1 `actions/checkout` = exactly 1 clone?
+  - Day 3: Fetch depth — does `fetch-depth=0` differ from shallow?
+  - Day 4: Double checkout — 2 checkout steps in 1 job = 1 or 2 clones?
+  - Day 5: Matrix 3x3 — 9 jobs x 1 checkout = how many clones/uniques?
+  - Day 6: Multi-run — 3 dispatches same day = 3 clones, 1 unique?
+  - Day 7: Manual clone — human `git clone` calibration (+1, +1)
+  - Day 8: PAT vs GITHUB_TOKEN — different auth = different identity?
+  - Day 9: Pages build — does Pages deployment add hidden clones?
+  - Days 10-11: Replication — repeat Days 2 and 5 for reproducibility
+- **5 candidate formulas** scored by RMSE against observed deltas:
+  `current_1to1`, `multiplier_1.5x`, `multiplier_2.0x`, `unique_per_day`,
+  `unique_per_wf`. Winner becomes the basis for GTT's organic clone formula.
+- **`run_experiment.py`** — daily launcher with UTC timing safety checks
+  (cutoff at 10 PM UTC), 20-hour minimum spacing, same-UTC-day guard,
+  special-case handling for multi-dispatch (Day 6), manual clone (Day 7),
+  PAT/token dual-dispatch (Day 8), and Pages setup (Day 9). Tracks all
+  trigger timestamps in `experiment_state.json` for precise correlation.
+- **`run_experiment.bat`** — Windows batch wrapper for desktop shortcut
+- **`analyze.py`** — pulls observer data from testbed repo via `gh api`,
+  joins experiment state + observations + formula predictions in memory
+  (never modifies input files), computes per-formula errors and RMSE
+  rankings. Supports `--pull`, `--report`, `--summary`, `--experiment`,
+  `--json` flags.
+- **`manifest.json`** — experiment schedule definition (12 entries)
+- **12 experiment JSON definitions** (`data/experiments/exp-00` through
+  `exp-11`) — each contains hypothesis, actions, and formula predictions.
+  Observed fields stay null; all derived values computed in memory.
+- **12 workflow YAML files + observer** (`testbed-workflows/`) — local
+  copies of workflows deployed to testbed repo via Contents API
+- **Testbed repo README** (`testbed-repo-files/README.md`)
+- **Research README** — end-to-end process guide covering daily
+  experiments, analysis pipeline, publication steps, data integrity
+  safeguards, and candidate formula descriptions
+
+### Changed
+- `.gitignore` — research testbed exclusions (`experiment_state.json`,
+  `observations.json`, `results/`); exception for `exp-08-pat-vs-token`
+  files caught by the `*token*` security pattern
+- `pytest.ini` — `research` added to `norecursedirs` so pytest skips
+  research scripts
+- Version bump 0.2.8 → 0.2.9
+
 ## [0.2.8-alpha] - 2026-02-28
 
 PyPI publishing infrastructure and version sync tooling.

@@ -1,0 +1,23 @@
+name: "Exp 05: Matrix 3x3"
+# Day 5 — 9 matrix jobs x 1 checkout each = ? total clones, ? unique
+# Hypothesis: +9 total clones, +1 unique (shared GITHUB_TOKEN identity)
+# This is the KEY experiment — directly tests the NCSI anomaly hypothesis.
+on: workflow_dispatch
+
+jobs:
+  matrix-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dim1: [a, b, c]
+        dim2: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report
+        run: |
+          echo "=== Experiment 05: Matrix 3x3 ==="
+          echo "Matrix job: ${{ matrix.dim1 }}-${{ matrix.dim2 }}"
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"

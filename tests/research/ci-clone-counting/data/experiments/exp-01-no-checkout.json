@@ -1,0 +1,39 @@
+{
+  "id": "exp-01",
+  "name": "No Checkout",
+  "date": null,
+  "day": 1,
+  "question": "Does a bare workflow (no actions/checkout) produce any clone events?",
+  "hypothesis": {
+    "expected_clone_delta": 0,
+    "expected_unique_delta": 0,
+    "reasoning": "Workflow runs on runner but never checks out the repo. No git operations should mean no clone events. If >0, runner infrastructure has hidden clone behavior."
+  },
+  "actions": {
+    "workflow": "exp-01-no-checkout.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 0,
+    "total_expected_checkouts": 0,
+    "manual_clones": 0,
+    "trigger_time_utc": null
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "multiplier_1.5x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "multiplier_2.0x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "unique_per_day":  { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "unique_per_wf":   { "predicted_ci_clones": 0, "predicted_ci_unique": 0 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": ""
+  }
+}

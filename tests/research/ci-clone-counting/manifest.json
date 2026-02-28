@@ -1,0 +1,121 @@
+{
+  "project": "gtt-ci-clone-testbed",
+  "repo": "djdarcy/gtt-ci-clone-testbed",
+  "purpose": "Empirically determine how GitHub's Traffic API counts clones from CI/CD activity",
+  "parent_issue": "djdarcy/github-traffic-tracker#49",
+  "observer_workflow": "observe-traffic.yml",
+  "observer_schedule_utc": "04:30",
+  "experiment_trigger_window_utc": "10:00-14:00",
+  "experiments": [
+    {
+      "day": 0,
+      "id": "exp-00",
+      "name": "Baseline",
+      "file": "data/experiments/exp-00-baseline.json",
+      "workflow": null,
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 1,
+      "id": "exp-01",
+      "name": "No Checkout",
+      "file": "data/experiments/exp-01-no-checkout.json",
+      "workflow": "exp-01-no-checkout.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 2,
+      "id": "exp-02",
+      "name": "Single Checkout",
+      "file": "data/experiments/exp-02-single-checkout.json",
+      "workflow": "exp-02-single-checkout.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 3,
+      "id": "exp-03",
+      "name": "Fetch Depth Variation",
+      "file": "data/experiments/exp-03-fetch-depth.json",
+      "workflow": "exp-03-fetch-depth.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 4,
+      "id": "exp-04",
+      "name": "Double Checkout",
+      "file": "data/experiments/exp-04-double-checkout.json",
+      "workflow": "exp-04-double-checkout.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 5,
+      "id": "exp-05",
+      "name": "Matrix 3x3",
+      "file": "data/experiments/exp-05-matrix-3x3.json",
+      "workflow": "exp-05-matrix-3x3.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 6,
+      "id": "exp-06",
+      "name": "Multi-Run Same Day",
+      "file": "data/experiments/exp-06-multi-run.json",
+      "workflow": "exp-06-multi-run.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 7,
+      "id": "exp-07",
+      "name": "Manual Clone Calibration",
+      "file": "data/experiments/exp-07-manual-calibration.json",
+      "workflow": null,
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 8,
+      "id": "exp-08",
+      "name": "PAT vs GITHUB_TOKEN",
+      "file": "data/experiments/exp-08-pat-vs-token.json",
+      "workflow": "exp-08-pat-vs-token.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 9,
+      "id": "exp-09",
+      "name": "Pages Build",
+      "file": "data/experiments/exp-09-pages-build.json",
+      "workflow": "exp-09-pages-build.yml",
+      "date": null,
+      "status": "pending"
+    },
+    {
+      "day": 10,
+      "id": "exp-10",
+      "name": "Replicate: Single Checkout",
+      "file": "data/experiments/exp-10-replicate-single.json",
+      "workflow": "exp-10-replicate-single.yml",
+      "date": null,
+      "status": "pending",
+      "replicate_of": "exp-02"
+    },
+    {
+      "day": 11,
+      "id": "exp-11",
+      "name": "Replicate: Matrix 3x3",
+      "file": "data/experiments/exp-11-replicate-matrix.json",
+      "workflow": "exp-11-replicate-matrix.yml",
+      "date": null,
+      "status": "pending",
+      "replicate_of": "exp-05"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+name: "Exp 07: Manual Calibration"
+# Day 7 — Placeholder. The actual experiment is a manual `git clone` from local.
+# This workflow is NOT triggered on Day 7.
+# Instead: git clone https://github.com/djdarcy/gtt-ci-clone-testbed.git /tmp/cal
+# Expected: +1 clone, +1 unique (human identity, not bot)
+on: workflow_dispatch
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: |
+          echo "=== Experiment 07: Manual Calibration ==="
+          echo "This workflow is a placeholder."
+          echo "The actual experiment is a manual git clone from a local machine."
+          echo "DO NOT trigger this workflow on experiment day."

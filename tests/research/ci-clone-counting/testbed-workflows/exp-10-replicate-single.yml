@@ -1,0 +1,21 @@
+name: "Exp 10: Replicate Single Checkout"
+# Day 10 — Repeatability validation for Exp 02.
+# Identical to exp-02 to test if results are deterministic.
+# Hypothesis: Same delta as Day 2 (expected: +1 clone, +1 unique)
+# If result differs from Day 2, measurement has stochastic component.
+on: workflow_dispatch
+
+jobs:
+  single:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report
+        run: |
+          echo "=== Experiment 10: Replicate Single Checkout ==="
+          echo "Identical to Exp 02 — repeatability validation."
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Git remote:"
+          git remote get-url origin | sed 's/x-access-token:[^@]*/x-access-token:REDACTED/'

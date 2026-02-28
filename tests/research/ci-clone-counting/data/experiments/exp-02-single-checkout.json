@@ -1,0 +1,39 @@
+{
+  "id": "exp-02",
+  "name": "Single Checkout",
+  "date": null,
+  "day": 2,
+  "question": "Is 1 actions/checkout = exactly 1 clone event?",
+  "hypothesis": {
+    "expected_clone_delta": 1,
+    "expected_unique_delta": 1,
+    "reasoning": "One checkout step should produce one clone event. This establishes the base unit for all subsequent experiments."
+  },
+  "actions": {
+    "workflow": "exp-02-single-checkout.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 1,
+    "manual_clones": 0,
+    "trigger_time_utc": null
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 1, "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 1, "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 1, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": ""
+  }
+}

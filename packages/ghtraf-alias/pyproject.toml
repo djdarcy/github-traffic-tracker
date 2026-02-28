@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ghtraf"
-version = "0.2.8a0"
+version = "0.2.9a0"
 description = "Alias for github-traffic-tracker — zero-server GitHub traffic analytics CLI"
 readme = {text = "This is an alias package. Run `pip install github-traffic-tracker` or `pip install ghtraf` — both install the same tool. See https://github.com/djdarcy/github-traffic-tracker for documentation.", content-type = "text/plain"}
 license = "GPL-3.0-or-later"
@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Version Control :: Git",
 ]
 
-dependencies = ["github-traffic-tracker==0.2.8a0"]
+dependencies = ["github-traffic-tracker==0.2.9a0"]
 
 [project.urls]
 Homepage = "https://github.com/djdarcy/github-traffic-tracker"

@@ -1,0 +1,39 @@
+{
+  "id": "exp-00",
+  "name": "Baseline",
+  "date": null,
+  "day": 0,
+  "question": "Does a new private repo start at zero clones? What contamination does API-only setup produce?",
+  "hypothesis": {
+    "expected_clone_delta": 0,
+    "expected_unique_delta": 0,
+    "reasoning": "Repo created and populated entirely via GitHub API (gh repo create + Contents API). No git clone or git push was performed. Expect zero clone events."
+  },
+  "actions": {
+    "workflow": null,
+    "dispatches": 0,
+    "jobs_per_dispatch": 0,
+    "checkouts_per_job": 0,
+    "total_expected_checkouts": 0,
+    "manual_clones": 0,
+    "notes": "No workflows triggered. Observer dispatched manually to capture initial state."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "multiplier_1.5x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "multiplier_2.0x": { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "unique_per_day":  { "predicted_ci_clones": 0, "predicted_ci_unique": 0 },
+    "unique_per_wf":   { "predicted_ci_clones": 0, "predicted_ci_unique": 0 }
+  },
+  "observed": {
+    "pre":  null,
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": ""
+  }
+}

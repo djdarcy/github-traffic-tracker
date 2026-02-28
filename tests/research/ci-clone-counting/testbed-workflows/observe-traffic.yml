@@ -1,0 +1,89 @@
+name: Observe Traffic
+# ZERO-CONTAMINATION OBSERVER
+# This workflow reads the Traffic API and stores results WITHOUT:
+# - Using actions/checkout (would add clone events)
+# - Using git push (would add clone events)
+# All file operations go through the GitHub Contents API.
+on:
+  schedule:
+    - cron: '30 4 * * *'   # Daily at 4:30 UTC
+  workflow_dispatch:
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read Traffic API
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "=== Traffic Observer ==="
+          echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          # 1. Read clone traffic (per-day breakdown)
+          CLONES=$(curl -sf -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/traffic/clones?per=day")
+          echo "Clone data retrieved: $(echo "$CLONES" | jq '.count') total, $(echo "$CLONES" | jq '.uniques') unique"
+
+          # 2. Read view traffic (for completeness)
+          VIEWS=$(curl -sf -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/traffic/views?per=day")
+
+          # 3. Read workflow runs for cross-reference
+          RUNS=$(curl -sf -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/actions/runs?per_page=100")
+
+          # 4. Build observation record
+          OBS_RECORD=$(jq -n \
+            --argjson clones "$CLONES" \
+            --argjson views "$VIEWS" \
+            --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson run_count "$(echo "$RUNS" | jq '.total_count')" \
+            --argjson runs "$(echo "$RUNS" | jq '[.workflow_runs[:50] | .[] | {name, status, conclusion, created_at, run_number, event}]')" \
+            '{
+              observedAt: $observed_at,
+              clones: $clones,
+              views: $views,
+              workflowRunCount: $run_count,
+              recentRuns: $runs
+            }')
+
+          # 5. Read existing observations file from repo (via Contents API)
+          EXISTING_RESP=$(curl -sf -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/contents/data/observations.json" \
+            2>/dev/null || echo '{}')
+
+          EXISTING_SHA=$(echo "$EXISTING_RESP" | jq -r '.sha // empty')
+          if [ -n "$EXISTING_SHA" ]; then
+            EXISTING_CONTENT=$(echo "$EXISTING_RESP" | jq -r '.content' | base64 -d)
+          else
+            EXISTING_CONTENT="[]"
+          fi
+
+          # 6. Append new observation
+          UPDATED=$(echo "$EXISTING_CONTENT" | jq --argjson new "$OBS_RECORD" '. + [$new]')
+
+          # 7. Write back via Contents API (NO git checkout, NO git push)
+          ENCODED=$(echo "$UPDATED" | base64 -w0)
+
+          if [ -n "$EXISTING_SHA" ]; then
+            # Update existing file
+            curl -sf -X PUT \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.github.com/repos/$REPO/contents/data/observations.json" \
+              -d "{\"message\":\"Observation $(date -u +%Y-%m-%d)\",\"content\":\"$ENCODED\",\"sha\":\"$EXISTING_SHA\"}" \
+              > /dev/null
+          else
+            # Create new file
+            curl -sf -X PUT \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.github.com/repos/$REPO/contents/data/observations.json" \
+              -d "{\"message\":\"Initial observation $(date -u +%Y-%m-%d)\",\"content\":\"$ENCODED\"}" \
+              > /dev/null
+          fi
+
+          echo "Observation committed via Contents API (zero clone contamination)."

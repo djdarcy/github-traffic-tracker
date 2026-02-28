@@ -1,0 +1,40 @@
+{
+  "id": "exp-08",
+  "name": "PAT vs GITHUB_TOKEN",
+  "date": null,
+  "day": 8,
+  "question": "Does checkout with a PAT produce a different unique identity than GITHUB_TOKEN?",
+  "hypothesis": {
+    "expected_clone_delta": 2,
+    "expected_unique_delta": 2,
+    "reasoning": "Run twice: once with default GITHUB_TOKEN, once with PAT. Different auth tokens should register as different unique cloners. Expected: 2 total clones, 2 unique."
+  },
+  "actions": {
+    "workflow": "exp-08-pat-vs-token.yml",
+    "dispatches": 2,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 2,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "First dispatch: use_pat=false (GITHUB_TOKEN). Second dispatch: use_pat=true (TRAFFIC_PAT)."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 2, "predicted_ci_unique": 1, "notes": "Current formula does not distinguish PAT from token" },
+    "multiplier_1.5x": { "predicted_ci_clones": 3, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 4, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 2, "predicted_ci_unique": 1, "notes": "1 unique per day regardless of identity" },
+    "unique_per_wf":   { "predicted_ci_clones": 2, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "If unique=2, PAT and GITHUB_TOKEN are separate identities — important for repos that use PATs in CI. If unique=1, GitHub deduplicates across auth methods."
+  }
+}

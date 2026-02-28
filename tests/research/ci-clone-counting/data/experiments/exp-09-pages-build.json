@@ -1,0 +1,40 @@
+{
+  "id": "exp-09",
+  "name": "Pages Build",
+  "date": null,
+  "day": 9,
+  "question": "Does GitHub Pages deployment produce hidden clones beyond the detected actions/checkout step?",
+  "hypothesis": {
+    "expected_clone_delta": 1,
+    "expected_unique_delta": 1,
+    "reasoning": "The workflow has 1 explicit actions/checkout. Pages build pipeline may add additional internal clones. If pages-build-deployment is excluded from traffic (community claim), could be 0. If internal operations produce clones, could be >1."
+  },
+  "actions": {
+    "workflow": "exp-09-pages-build.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 1,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "Enable Pages (Settings > Pages > main branch /docs) BEFORE triggering. Disable Pages AFTER experiment to prevent contamination."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 1, "predicted_ci_unique": 1, "notes": "Only counts the explicit checkout" },
+    "multiplier_1.5x": { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 1, "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 1, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "If delta > 1, Pages infrastructure produces hidden clones — explains part of the NCSI anomaly. Disable Pages after experiment."
+  }
+}

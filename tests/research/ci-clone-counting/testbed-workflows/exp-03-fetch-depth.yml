@@ -1,0 +1,31 @@
+name: "Exp 03: Fetch Depth"
+# Day 3 — Does fetch-depth=0 (full history) differ from default (depth=1)?
+# Hypothesis: No difference in clone count. Both are git fetch operations.
+on:
+  workflow_dispatch:
+    inputs:
+      depth:
+        description: "Fetch depth (0 for full history, 1 for shallow)"
+        required: true
+        default: "0"
+        type: choice
+        options:
+          - "0"
+          - "1"
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event.inputs.depth }}
+      - name: Report
+        run: |
+          echo "=== Experiment 03: Fetch Depth ==="
+          echo "fetch-depth=${{ github.event.inputs.depth }}"
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Commit count in local repo:"
+          git rev-list --count HEAD

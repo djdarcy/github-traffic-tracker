@@ -1,0 +1,40 @@
+{
+  "id": "exp-05",
+  "name": "Matrix 3x3",
+  "date": null,
+  "day": 5,
+  "question": "Do 9 matrix jobs (each with 1 checkout) produce 9 clones and 1 unique?",
+  "hypothesis": {
+    "expected_clone_delta": 9,
+    "expected_unique_delta": 1,
+    "reasoning": "9 jobs × 1 checkout = 9 clone events (if 1:1 holds from Day 2). All jobs use GITHUB_TOKEN = same bot identity = 1 unique per day. This directly relates to the NCSI Resolver anomaly."
+  },
+  "actions": {
+    "workflow": "exp-05-matrix-3x3.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 9,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 9,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "3x3 matrix (dim1: [a,b,c], dim2: [1,2,3]), fail-fast: false"
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 14, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 18, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "THE key experiment. Maps directly to NCSI Resolver anomaly (4-job matrix). If delta=18, multiplier hypothesis confirmed."
+  }
+}

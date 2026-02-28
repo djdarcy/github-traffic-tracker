@@ -1,0 +1,19 @@
+name: "Exp 06: Multi-Run"
+# Day 6 — Trigger this 3 times in one UTC day.
+# Tests: 3 runs x 1 checkout = 3 total clones, but only 1 unique?
+# Hypothesis: +3 clones, +1 unique (same bot identity, per-day dedup)
+# NOTE: Reuses exp-02 structure. Trigger 3x with ~1hr spacing.
+on: workflow_dispatch
+
+jobs:
+  single:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report
+        run: |
+          echo "=== Experiment 06: Multi-Run ==="
+          echo "This workflow is triggered 3 times in one UTC day."
+          echo "Run timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"

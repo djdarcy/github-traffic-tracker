@@ -1,0 +1,19 @@
+name: "Exp 02: Single Checkout"
+# Day 2 — Baseline: 1 run, 1 job, 1 actions/checkout = ? clones, ? unique
+# Hypothesis: +1 clone, +1 unique (or +0 unique if bot identity already counted)
+on: workflow_dispatch
+
+jobs:
+  single:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report
+        run: |
+          echo "=== Experiment 02: Single Checkout ==="
+          echo "Single checkout completed."
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Git log:"
+          git log --oneline -3

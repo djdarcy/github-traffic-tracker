@@ -1,0 +1,40 @@
+{
+  "id": "exp-04",
+  "name": "Double Checkout",
+  "date": null,
+  "day": 4,
+  "question": "Do 2 checkout steps in 1 job produce 1 or 2 clone events?",
+  "hypothesis": {
+    "expected_clone_delta": 2,
+    "expected_unique_delta": 1,
+    "reasoning": "Two separate actions/checkout steps in one job. If counting is per-step, expect 2 clones. If per-job, expect 1. The unique should be 1 (same bot identity, same day)."
+  },
+  "actions": {
+    "workflow": "exp-04-double-checkout.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 2,
+    "total_expected_checkouts": 2,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "Second checkout uses path: second-checkout to avoid overwriting first."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 3, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 4, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 2, "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 2, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Key differentiator: if delta=1, counting is per-job. If delta=2, per-step (supports 1:1). If delta=4, 2x multiplier is real."
+  }
+}

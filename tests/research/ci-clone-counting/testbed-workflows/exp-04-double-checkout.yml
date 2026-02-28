@@ -1,0 +1,30 @@
+name: "Exp 04: Double Checkout"
+# Day 4 — Do 2 actions/checkout steps in 1 job = 1 or 2 clone events?
+# Hypothesis A (per-step): +2 clones
+# Hypothesis B (per-job): +1 clone
+on: workflow_dispatch
+
+jobs:
+  double:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: First checkout done
+        run: |
+          echo "=== Experiment 04: Double Checkout ==="
+          echo "First checkout (main) completed."
+          ls -la
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: second-checkout
+      - name: Second checkout done
+        run: |
+          echo "Second checkout (main, path=second-checkout) completed."
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          ls -la second-checkout/

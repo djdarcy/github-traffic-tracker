@@ -2,6 +2,16 @@
 # This template provides comprehensive exclusions for various languages and tools
 
 #######################
+# Research testbed     #
+#######################
+# Machine-local state (trigger timestamps, progress)
+tests/research/ci-clone-counting/experiment_state.json
+# Pulled from GitHub on demand (not source data)
+tests/research/ci-clone-counting/data/observations.json
+# Generated output (reproducible from analyze.py)
+tests/research/ci-clone-counting/results/
+
+#######################
 # Common ignored files #
 #######################
 .DS_Store
@@ -123,6 +133,8 @@ out/
 *secret*
 *password*
 .env
+# Exception: experiment files that happen to contain "token" in the name
+!tests/research/**/exp-*-pat-vs-token.*
 .secret
 credentials.json
 *auth*.json

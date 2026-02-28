@@ -1,0 +1,40 @@
+{
+  "id": "exp-11",
+  "name": "Replicate: Matrix 3x3",
+  "date": null,
+  "day": 11,
+  "replicate_of": "exp-05",
+  "question": "Repeatability validation — does a 3x3 matrix produce the same delta as Day 5?",
+  "hypothesis": {
+    "expected_clone_delta": 9,
+    "expected_unique_delta": 1,
+    "reasoning": "Identical to Exp 05. If results match, the matrix clone counting is deterministic. Combined with Day 10 replicate, gives us 2 data points per key scenario."
+  },
+  "actions": {
+    "workflow": "exp-11-replicate-matrix.yml",
+    "dispatches": 1,
+    "jobs_per_dispatch": 9,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 9,
+    "manual_clones": 0,
+    "trigger_time_utc": null
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 14, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 18, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 9,  "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Replicate of exp-05. Compare delta to Day 5 for determinism assessment."
+  }
+}

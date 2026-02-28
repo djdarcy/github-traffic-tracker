@@ -1,0 +1,16 @@
+name: "Exp 01: No Checkout"
+# Day 1 — Does a bare workflow (no actions/checkout) register any clones?
+# Hypothesis: 0 clone delta. If > 0, runner infrastructure has hidden clone cost.
+on: workflow_dispatch
+
+jobs:
+  bare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: No checkout - bare workflow
+        run: |
+          echo "=== Experiment 01: No Checkout ==="
+          echo "This workflow does NOT use actions/checkout."
+          echo "If the Traffic API shows a clone delta, the runner itself produces clones."
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"

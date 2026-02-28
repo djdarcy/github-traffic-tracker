@@ -1,0 +1,40 @@
+{
+  "id": "exp-06",
+  "name": "Multi-Run Same Day",
+  "date": null,
+  "day": 6,
+  "question": "Do 3 dispatches of 1-checkout workflow in one UTC day produce 3 clones and 1 unique?",
+  "hypothesis": {
+    "expected_clone_delta": 3,
+    "expected_unique_delta": 1,
+    "reasoning": "3 separate workflow runs × 1 checkout each = 3 total clones. All use GITHUB_TOKEN = same bot identity. GitHub moderator says unique = 1 per day regardless of runs."
+  },
+  "actions": {
+    "workflow": "exp-06-multi-run.yml",
+    "dispatches": 3,
+    "jobs_per_dispatch": 1,
+    "checkouts_per_job": 1,
+    "total_expected_checkouts": 3,
+    "manual_clones": 0,
+    "trigger_time_utc": null,
+    "notes": "Trigger 3 times with ~1hr spacing within the same UTC day."
+  },
+  "formulas": {
+    "current_1to1":    { "predicted_ci_clones": 3, "predicted_ci_unique": 1 },
+    "multiplier_1.5x": { "predicted_ci_clones": 5, "predicted_ci_unique": 1 },
+    "multiplier_2.0x": { "predicted_ci_clones": 6, "predicted_ci_unique": 1 },
+    "unique_per_day":  { "predicted_ci_clones": 3, "predicted_ci_unique": 1 },
+    "unique_per_wf":   { "predicted_ci_clones": 3, "predicted_ci_unique": 1 }
+  },
+  "observed": {
+    "pre":  { "date_count": null, "date_uniques": null, "source": null },
+    "post": { "date_count": null, "date_uniques": null, "source": null },
+    "delta_clones": null,
+    "delta_unique": null
+  },
+  "results": {
+    "best_clone_formula": null,
+    "best_unique_formula": null,
+    "notes": "Tests unique dedup model. If unique=3, unique is per-run not per-day."
+  }
+}

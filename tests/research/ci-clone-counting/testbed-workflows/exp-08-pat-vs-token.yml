@@ -1,0 +1,33 @@
+name: "Exp 08: PAT vs Token"
+# Day 8 — Does checkout with a PAT produce a different unique identity
+# than the default GITHUB_TOKEN?
+# Procedure: Run twice — once default, once with PAT.
+# Hypothesis: +2 clones, +2 unique (different identities)
+on:
+  workflow_dispatch:
+    inputs:
+      use_pat:
+        description: "Use PAT instead of GITHUB_TOKEN"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+jobs:
+  auth-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ github.event.inputs.use_pat == 'true' && secrets.TRAFFIC_PAT || github.token }}
+      - name: Report
+        run: |
+          echo "=== Experiment 08: PAT vs Token ==="
+          echo "use_pat=${{ github.event.inputs.use_pat }}"
+          echo "Checkout version: actions/checkout@v4"
+          echo "Runner: $(uname -a)"
+          echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Remote URL (redacted):"
+          git remote get-url origin | sed 's/x-access-token:[^@]*/x-access-token:REDACTED/'

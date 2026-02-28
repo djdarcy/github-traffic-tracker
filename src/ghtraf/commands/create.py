@@ -15,6 +15,7 @@ from pathlib import Path
 
 from ghtraf import gh, gist, configure
 from ghtraf.config import register_repo_globally, save_project_config
+from ghtraf.lib.log_lib import get_output
 from ghtraf.output import (
     print_dry, print_ok, print_skip, print_step, print_warn, prompt,
 )
@@ -195,10 +196,13 @@ def run(args):
         print("[DRY RUN MODE - no changes will be made]")
 
     # Prerequisites
+    out = get_output()
     print("\nChecking prerequisites...")
+    out.emit(1, "  [setup] Checking gh CLI installation...", channel='setup')
     version = gh.check_gh_installed()
     print_ok(f"gh CLI found ({version})")
 
+    out.emit(1, "  [api] Checking GitHub authentication...", channel='api')
     auth_output = gh.check_gh_authenticated()
     # Extract login line for display
     for line in auth_output.split("\n"):
@@ -222,12 +226,20 @@ def run(args):
 
     # Configuration
     print("\nGathering configuration...")
+    out.emit(1, "  [setup] Gathering configuration (interactive={interactive})",
+             channel='setup', interactive=not args.non_interactive)
     config = _gather_config(args)
     config["gh_username"] = gh_username
     config["gist_token_name"] = args.gist_token_name
     config["non_interactive"] = args.non_interactive
 
     _validate_config(config)
+    out.emit(2, "  [config] Resolved: owner={owner}, repo={repo}, created={created}",
+             channel='config', owner=config['owner'], repo=config['repo'],
+             created=config['created'])
+    out.emit(2, "  [config] display_name={dn}, ci_workflows={ci}",
+             channel='config', dn=config['display_name'],
+             ci=config['ci_workflows'])
 
     total_steps = 3
     if args.configure_files:
@@ -255,19 +267,27 @@ def run(args):
     # Step 1: Create badge gist
     step = 1
     print_step(step, total_steps, "Create badge gist (public)")
+    out.emit(1, "  [gist] Creating public badge gist for {repo}",
+             channel='gist', repo=config['gh_repo'])
     badge_gist_id = gist.create_badge_gist(config, dry_run=dry_run)
+    out.emit(2, "  [gist] Badge gist ID: {gid}", channel='gist', gid=badge_gist_id)
     config["badge_gist_id"] = badge_gist_id
 
     # Step 2: Create archive gist
     step += 1
     print_step(step, total_steps, "Create archive gist (unlisted)")
+    out.emit(1, "  [gist] Creating unlisted archive gist for {repo}",
+             channel='gist', repo=config['gh_repo'])
     archive_gist_id = gist.create_archive_gist(config, dry_run=dry_run)
+    out.emit(2, "  [gist] Archive gist ID: {gid}", channel='gist', gid=archive_gist_id)
     config["archive_gist_id"] = archive_gist_id
 
     # Step 3: Set repository variables
     if not args.skip_variables:
         step += 1
         print_step(step, total_steps, "Set repository variables")
+        out.emit(1, "  [api] Setting repository variables on {repo}",
+                 channel='api', repo=config['gh_repo'])
 
         success = gh.set_repo_variable(
             "TRAFFIC_GIST_ID", badge_gist_id, config["gh_repo"], dry_run)
@@ -314,6 +334,7 @@ def run(args):
         configure.configure_workflow(config, workflow_path, dry_run=dry_run)
 
     # Write config files
+    out.emit(1, "  [config] Writing project configuration...", channel='config')
     if not dry_run:
         repo_dir = Path(args.repo_dir or ".").resolve()
         project_cfg = {

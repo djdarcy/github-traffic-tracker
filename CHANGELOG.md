@@ -5,6 +5,40 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0-alpha] - 2026-02-28
+
+THAC0 verbosity system — structured diagnostic output with named channels.
+
+### Added
+- **THAC0 verbosity system** (#14, #15) — Port of the structured output
+  system from Prime-Square-Sum. Single-axis verbosity dial (`-v`/`-vv`/`-vvv`
+  to increase, `-Q`/`-QQ` to decrease) plus named output channels (`--show
+  api:2`) for selective diagnostics without noise from unrelated subsystems.
+- **log_lib** (`src/ghtraf/lib/log_lib/`, 6 files) — OutputManager singleton,
+  `emit()`/`hint()`/`error()` methods, channel spec parsing, hint registry,
+  `@trace` decorator. DazzleLib release candidate — identical across projects,
+  uses relative intra-package imports for zero-sed portability.
+- **help_lib** (`src/ghtraf/lib/help_lib/`, 4 files) — HelpContent dataclass,
+  HelpBuilder, formatters (Example/Tip/Compact/Tutorial), content registry.
+  DazzleLib release candidate.
+- **GTT channel config** (`src/ghtraf/channels.py`) — 8 named channels: `api`,
+  `config`, `gist`, `setup`, `general`, `hint`, `error`, `trace`. Channel
+  descriptions and opt-in set (trace only). Keeps log_lib project-agnostic.
+- **29 log_lib tests** (`tests/test_log_lib.py`) — OutputManager, emit levels,
+  channel filtering, hints, @trace, channel state isolation via autouse fixture.
+- **5 new CLI tests** — `-vv` stacking, `-Q`/`-QQQ`, `--show` with channel
+  spec, bare `--show` channel listing.
+- `emit()` calls in `create.py` — setup, api, gist, config channels wired as
+  proof-of-concept. `-v` shows 7 level-1 messages, `-vv` adds 4 level-2
+  messages with config detail and gist IDs.
+
+### Changed
+- `--verbose` flag from `store_true` to `count` (enables `-v`/`-vv`/`-vvv`)
+- Added `-Q`/`--quiet` (count) and `--show` (channel spec) global flags
+- `.gitignore` — `!src/ghtraf/lib/` negation to unblock lib/ directory from
+  Python packaging `lib/` pattern
+- Version bump 0.2.9 → 0.3.0
+
 ## [0.2.9-alpha] - 2026-02-28
 
 CI clone testbed — 12-experiment research framework to empirically determine

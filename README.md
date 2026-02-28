@@ -71,6 +71,20 @@ Both options will:
 
 After setup, copy `.github/workflows/traffic-badges.yml` to your repo, enable GitHub Pages (Settings > Pages > Deploy from branch > main, /docs), and push.
 
+## Verbosity & Diagnostics
+
+```bash
+ghtraf -v create ...              # Level 1 — setup steps, API calls, gist operations
+ghtraf -vv create ...             # Level 2 — config detail, gist IDs
+ghtraf -QQ create ...             # Quieter — warnings and errors only
+ghtraf --show gist:2 create ...   # Show only gist channel at level 2
+ghtraf --show                     # List all available channels
+```
+
+Eight named channels (`api`, `config`, `gist`, `setup`, `general`, `hint`, `error`, `trace`) let you see specific diagnostics without global noise.
+
+For full parameter documentation, see [docs/parameters.md](docs/parameters.md).
+
 ## Badge Showcase
 
 | Badge | What it shows | Example |
@@ -100,7 +114,7 @@ See [ROADMAP.md](ROADMAP.md) or [Issue #1 — Roadmap](https://github.com/djdarc
 
 ## Current Status
 
-GTT is in **early alpha** (v0.2.x). The core workflow and dashboard are functional and actively running on multiple repos, but CLI tooling and several features are still in development.
+GTT is in **early alpha** (v0.3.x). The core workflow and dashboard are functional and actively running on multiple repos, but CLI tooling and several features are still in development.
 
 **What works today:**
 
@@ -110,11 +124,12 @@ GTT is in **early alpha** (v0.2.x). The core workflow and dashboard are function
 - 5-tab dashboard with charts
 - `setup-gists.py` onboarding script
 - `pip install github-traffic-tracker` / `pip install ghtraf`
+- Structured verbosity (`-v`/`-Q`/`--show`) with 8 named output channels
 
 **In progress:**
 
 - `ghtraf` CLI subcommands beyond `create` ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
-- Template system for workflow/dashboard files
+- Template system for workflow/dashboard files (`ghtraf init`)
 - Schema migration tooling
 
 **Known limitations:**

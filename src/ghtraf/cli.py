@@ -21,8 +21,12 @@ from ghtraf._version import BASE_VERSION, VERSION
 # Global flags (Docker-style: can precede the subcommand)
 # ---------------------------------------------------------------------------
 GLOBAL_FLAGS = {
-    "--verbose": {"action": "store_true", "default": False,
-                  "help": "Enable verbose output"},
+    "--verbose": {"aliases": ["-v"], "action": "count", "default": 0,
+                  "help": "Increase verbosity (-v, -vv, -vvv)"},
+    "--quiet": {"aliases": ["-Q"], "action": "count", "default": 0,
+                "help": "Decrease verbosity (-Q, -QQ, -QQQ, -QQQQ=silent)"},
+    "--show": {"nargs": "?", "action": "append", "metavar": "CHANNEL[:LEVEL]",
+               "help": "Show output channel (bare --show lists channels)"},
     "--no-color": {"action": "store_true", "default": False,
                    "help": "Disable colored output"},
     "--config": {"metavar": "PATH", "default": None,
@@ -37,7 +41,10 @@ def _extract_global_flags(argv):
     """
     global_parser = argparse.ArgumentParser(add_help=False)
     for flag, kwargs in GLOBAL_FLAGS.items():
-        global_parser.add_argument(flag, **kwargs)
+        aliases = kwargs.pop("aliases", [])
+        global_parser.add_argument(flag, *aliases, **kwargs)
+        if aliases:
+            kwargs["aliases"] = aliases  # restore for reuse
 
     global_args, remaining = global_parser.parse_known_args(argv)
     return global_args, remaining
@@ -102,7 +109,9 @@ def _build_parser(commands, common_parser):
 
     # Add global flags to main parser too (for --help display)
     for flag, kwargs in GLOBAL_FLAGS.items():
-        parser.add_argument(flag, **kwargs)
+        kw = {k: v for k, v in kwargs.items() if k != "aliases"}
+        aliases = kwargs.get("aliases", [])
+        parser.add_argument(flag, *aliases, **kw)
 
     subparsers = parser.add_subparsers(
         dest="command",
@@ -135,6 +144,20 @@ def main(argv=None):
 
     # Pass 1: extract global flags from anywhere in the arg list
     global_args, remaining = _extract_global_flags(argv)
+
+    # Handle bare --show (list channels and exit)
+    if global_args.show and None in global_args.show:
+        from ghtraf.channels import format_gtt_channel_list
+        print(format_gtt_channel_list())
+        return 0
+
+    # Initialize THAC0 output system
+    verbosity = (global_args.verbose or 0) - (global_args.quiet or 0)
+    channels = [s for s in (global_args.show or []) if s is not None]
+    from ghtraf.channels import configure_gtt_channels
+    from ghtraf.lib.log_lib import init_output
+    configure_gtt_channels()
+    init_output(verbosity=verbosity, channels=channels)
 
     # Pass 2: parse subcommand + shared/specific args
     common_parser = _build_common_parser()

@@ -60,6 +60,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!src/ghtraf/lib/
 lib64/
 parts/
 sdist/

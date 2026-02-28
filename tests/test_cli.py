@@ -16,7 +16,7 @@ class TestGlobalFlagExtraction:
         global_args, remaining = _extract_global_flags(
             ["--verbose", "create", "--owner", "x"]
         )
-        assert global_args.verbose is True
+        assert global_args.verbose == 1
         assert "create" in remaining
         assert "--verbose" not in remaining
 
@@ -25,8 +25,45 @@ class TestGlobalFlagExtraction:
         global_args, remaining = _extract_global_flags(
             ["create", "--owner", "x", "--verbose"]
         )
-        assert global_args.verbose is True
+        assert global_args.verbose == 1
         assert "--verbose" not in remaining
+
+    def test_verbose_stacks(self):
+        """-vv should give verbose count of 2."""
+        global_args, remaining = _extract_global_flags(
+            ["-vv", "create"]
+        )
+        assert global_args.verbose == 2
+
+    def test_quiet_extracted(self):
+        """-Q should be extracted as quiet count."""
+        global_args, remaining = _extract_global_flags(
+            ["-Q", "create"]
+        )
+        assert global_args.quiet == 1
+
+    def test_quiet_stacks(self):
+        """-QQQ should give quiet count of 3."""
+        global_args, remaining = _extract_global_flags(
+            ["-QQQ", "create"]
+        )
+        assert global_args.quiet == 3
+
+    def test_show_with_channel(self):
+        """--show api:2 should be extracted."""
+        global_args, remaining = _extract_global_flags(
+            ["--show", "api:2", "create"]
+        )
+        assert global_args.show == ["api:2"]
+
+    def test_show_bare_lists_channels(self):
+        """Bare --show at end of args should give None in the list."""
+        global_args, remaining = _extract_global_flags(
+            ["create", "--show"]
+        )
+        # --show at the end (no following arg) produces None in the list
+        assert global_args.show is not None
+        assert None in global_args.show
 
     def test_no_color_extracted(self):
         """--no-color should be extracted as a global flag."""
@@ -48,7 +85,9 @@ class TestGlobalFlagExtraction:
         global_args, remaining = _extract_global_flags(
             ["create", "--owner", "x"]
         )
-        assert global_args.verbose is False
+        assert global_args.verbose == 0
+        assert global_args.quiet == 0
+        assert global_args.show is None
         assert global_args.no_color is False
         assert global_args.config is None
         assert remaining == ["create", "--owner", "x"]
@@ -56,7 +95,8 @@ class TestGlobalFlagExtraction:
     def test_empty_argv(self):
         """Empty argv should produce default global args."""
         global_args, remaining = _extract_global_flags([])
-        assert global_args.verbose is False
+        assert global_args.verbose == 0
+        assert global_args.quiet == 0
         assert remaining == []
 
 

@@ -1,8 +1,10 @@
 # GitHub Traffic Tracker
 
-[![Version][version-badge]][version-url] [![Python 3.10+][python-badge]][python-url] [![License][license-badge]][license-url] [![GitHub Discussions][discussions-badge]][discussions-url] [![Platform][platform-badge]][platform-url]
+[![PyPI][pypi-badge]][pypi-url] [![Release Date][release-date-badge]][release-date-url] [![Python 3.10+][python-badge]][python-url] [![License][license-badge]][license-url] [![GitHub Discussions][discussions-badge]][discussions-url] [![Platform][platform-badge]][platform-url]
 
 Zero-server GitHub traffic analytics — daily collection, permanent history, smart badges.
+
+> **Alpha Software**: This tool is in early development. The core workflow and dashboard are stable, but CLI tooling is still evolving. See [Current Status](#current-status) for details.
 
 **Live from this repo's own tracker:**
 
@@ -96,6 +98,30 @@ This system is actively running on:
 
 See [ROADMAP.md](ROADMAP.md) or [Issue #1 — Roadmap](https://github.com/djdarcy/github-traffic-tracker/issues/1) for the full plan.
 
+## Current Status
+
+GTT is in **early alpha** (v0.2.x). The core workflow and dashboard are functional and actively running on multiple repos, but CLI tooling and several features are still in development.
+
+**What works today:**
+
+- Daily traffic collection via GitHub Actions
+- Permanent history in Gist storage (beyond GitHub's 14-day window)
+- Cascading recency badges (installs, views, clones)
+- 5-tab dashboard with charts
+- `setup-gists.py` onboarding script
+- `pip install github-traffic-tracker` / `pip install ghtraf`
+
+**In progress:**
+
+- `ghtraf` CLI subcommands beyond `create` ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
+- Template system for workflow/dashboard files
+- Schema migration tooling
+
+**Known limitations:**
+
+- CI clone subtraction uses heuristic formulas (empirical validation planned)
+- Dashboard is a single HTML file (JS modularization planned)
+
 ## Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
@@ -112,8 +138,10 @@ This project is licensed under the GNU General Public License v3.0 — see [LICE
 
 <!-- Badge references -->
 
-[version-badge]: https://img.shields.io/github/v/release/djdarcy/github-traffic-tracker?sort=semver&color=darkgreen
-[version-url]: https://github.com/djdarcy/github-traffic-tracker/releases
+[release-date-badge]: https://img.shields.io/github/release-date/djdarcy/github-traffic-tracker?color=darkgreen
+[release-date-url]: https://github.com/djdarcy/github-traffic-tracker/releases
+[pypi-badge]: https://img.shields.io/pypi/v/github-traffic-tracker?color=darkgreen
+[pypi-url]: https://pypi.org/project/github-traffic-tracker/
 [installs-badge]: https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/djdarcy/fffb1b8632243b40ad183a161ff0f32e/raw/installs.json
 [installs-url]: https://djdarcy.github.io/github-traffic-tracker/stats/#installs
 [views-badge]: https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/djdarcy/fffb1b8632243b40ad183a161ff0f32e/raw/views.json

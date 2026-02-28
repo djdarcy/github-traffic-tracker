@@ -16,7 +16,7 @@ PATCH = 8
 PHASE = "alpha"  # Per-MINOR feature set: None, "alpha", "beta", "rc1", etc.
 
 # Auto-updated by git hooks - do not edit manually
-__version__ = "0.2.8-alpha_main_12-20260228-4691eea"
+__version__ = "0.2.8-alpha_main_13-20260228-e98fa67"
 __app_name__ = "ghtraf"
 
 

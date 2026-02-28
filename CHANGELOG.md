@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.8-alpha] - 2026-02-28
 
-PyPI publishing infrastructure.
+PyPI publishing infrastructure and version sync tooling.
 
 ### Added
 - **PyPI publish workflow** (`.github/workflows/publish.yml`) — trusted
@@ -17,11 +17,21 @@ PyPI publishing infrastructure.
 - **`ghtraf` alias package** (`packages/ghtraf-alias/`) — thin wrapper
   that depends on `github-traffic-tracker`. `pip install ghtraf` and
   `pip install github-traffic-tracker` both install the same tool.
+- **`sync-versions.py`** (`scripts/`) — single script that propagates
+  version from `version.py` to `src/ghtraf/_version.py` (components +
+  `__version__` string) and `packages/ghtraf-alias/pyproject.toml`
+  (PEP 440 conversion). Supports `--bump`, `--set`, `--check`, `--auto`.
+  Replaces `update-version.sh` for all version management.
 - Trove classifiers on main `pyproject.toml` for PyPI discoverability
+- PyPI and Release Date badges in README
+- Alpha warning and Current Status section in README (#50)
 
 ### Changed
+- Git hooks (`pre-commit`, `post-commit`) now call `sync-versions.py`
+  instead of `update-version.sh`, syncing all version files at once
 - License format: TOML table → SPDX expression string (setuptools
   deprecation fix)
+- `update-version.sh` renamed to `.bak` (superseded by `sync-versions.py`)
 - Version bump 0.2.7 → 0.2.8
 
 ## [0.2.7-alpha] - 2026-02-28

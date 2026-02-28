@@ -335,10 +335,6 @@ jobs:
             }
 
             // Always ensure today's entry exists to prove the script ran.
-            // Don't set uniqueClones/uniqueViews here — if the API returned
-            // data for today, the loop above already wrote them (including
-            // valid zeros). If it didn't, leaving them undefined signals
-            // "no data collected" vs "zero visitors" — gap detection.
             if (!existingByDate[todayStr]) {
               const todayEntry = {
                 date: todayStr + "T00:00:00Z",
@@ -367,6 +363,23 @@ jobs:
 
             // Apply downloads to today's entry
             existingByDate[todayStr].downloads = todayDownloads;
+
+            // Backfill zeros for dates within the API's 14-day window that
+            // weren't in the API response. The Traffic API only returns dates
+            // with count > 0, so absence means zero traffic — not "no data."
+            // Dates outside the API window keep undefined (gap detection).
+            {
+              const windowStart = new Date();
+              windowStart.setDate(windowStart.getDate() - 13);
+              const windowStartStr = windowStart.toISOString().slice(0, 10);
+              for (const entry of state.dailyHistory) {
+                const dateStr = entry.date.slice(0, 10);
+                if (dateStr >= windowStartStr && dateStr <= todayStr) {
+                  if (entry.uniqueClones === undefined) entry.uniqueClones = 0;
+                  if (entry.uniqueViews === undefined) entry.uniqueViews = 0;
+                }
+              }
+            }
 
             // Recompute totals for all entries that were updated
             for (const entry of state.dailyHistory) {

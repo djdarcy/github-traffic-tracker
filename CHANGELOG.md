@@ -5,6 +5,29 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5-alpha] - 2026-02-28
+
+Fix zero-traffic days missing uniqueClones/uniqueViews in dailyHistory.
+
+### Fixed
+- **Zero-traffic days missing unique fields** — The Traffic API only returns dates
+  with non-zero clone/view counts. For zero-traffic days, the API simply omits the
+  date from its response, so `clonesByDate[date]` is `undefined` and the v0.2.4 fix
+  (`!== undefined` check) correctly skipped writing. Added a backfill pass after the
+  merge loop: any dailyHistory entry within the API's 14-day window that still has
+  `uniqueClones === undefined` gets set to 0, because "not in API response" means
+  "zero traffic" — not "no data collected."
+
+- **Dashboard projection gap for US-timezone users** — `projectTrailingZeros()`
+  only projected when the last entry was "today" (UTC). For US users viewing after
+  midnight UTC (7pm EST / 4pm PST) but before the 3am UTC workflow run, the last
+  entry is "yesterday" and no projection fired — chart lines dropped to zero at the
+  right edge. Now projects when the last entry is today OR yesterday.
+
+### Changed
+- License badge color `blue` → `darkgreen` (matches Python badge)
+- Version bump 0.2.4 → 0.2.5
+
 ## [0.2.4-alpha] - 2026-02-27
 
 Fix false-zero suppression and badge color refresh.

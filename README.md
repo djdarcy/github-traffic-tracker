@@ -124,7 +124,7 @@ This project is licensed under the GNU General Public License v3.0 — see [LICE
 [downloads-url]: https://djdarcy.github.io/github-traffic-tracker/stats/#installs
 [python-badge]: https://img.shields.io/badge/python-3.10+-darkgreen
 [python-url]: https://www.python.org/downloads/
-[license-badge]: https://img.shields.io/badge/license-GPLv3-blue
+[license-badge]: https://img.shields.io/badge/license-GPLv3-darkgreen
 [license-url]: https://www.gnu.org/licenses/gpl-3.0
 [discussions-badge]: https://img.shields.io/github/discussions/djdarcy/github-traffic-tracker
 [discussions-url]: https://github.com/djdarcy/github-traffic-tracker/discussions

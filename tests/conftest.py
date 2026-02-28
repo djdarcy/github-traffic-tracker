@@ -164,6 +164,7 @@ def mock_gh(monkeypatch):
         return "2026-01-01"
 
     import ghtraf.gh as gh_mod
+    import ghtraf.gist as gist_mod
     monkeypatch.setattr(gh_mod, "check_gh_installed", fake_check_gh_installed)
     monkeypatch.setattr(gh_mod, "check_gh_authenticated", fake_check_gh_authenticated)
     monkeypatch.setattr(gh_mod, "check_gh_scopes", fake_check_gh_scopes)
@@ -173,5 +174,9 @@ def mock_gh(monkeypatch):
     monkeypatch.setattr(gh_mod, "set_repo_secret", fake_set_repo_secret)
     monkeypatch.setattr(gh_mod, "check_repo_exists", fake_check_repo_exists)
     monkeypatch.setattr(gh_mod, "get_repo_created_date", fake_get_repo_created_date)
+    # Also patch the already-imported binding in gist.py — since gist.py uses
+    # `from ghtraf.gh import run_gh`, its local name still points to the real
+    # function unless we patch gist_mod.run_gh directly.
+    monkeypatch.setattr(gist_mod, "run_gh", fake_run_gh)
 
     return calls

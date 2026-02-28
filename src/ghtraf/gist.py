@@ -69,7 +69,7 @@ def create_badge_gist(config, dry_run=False):
         "views.json": json.dumps(build_badge("views"), indent=2),
     }
 
-    description = f"{config['gh_repo']} traffic badges"
+    description = f"[GTT] {config['gh_repo']} \u00b7 badges"
 
     if dry_run:
         print_dry(f"Would create PUBLIC gist: \"{description}\"")
@@ -110,7 +110,7 @@ def create_archive_gist(config, dry_run=False):
         "archives": [],
     }, indent=2)
 
-    description = f"{config['gh_repo']} traffic archive"
+    description = f"[GTT] {config['gh_repo']} \u00b7 archive"
 
     if dry_run:
         print_dry(f"Would create UNLISTED gist: \"{description}\"")

@@ -5,6 +5,39 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7-alpha] - 2026-02-28
+
+Gist naming convention for discoverability.
+
+### Changed
+- **Gist naming convention** (#48) — Gist descriptions now use
+  `[GTT] owner/repo · badges` and `[GTT] owner/repo · archive` format.
+  The `[GTT]` prefix enables visual scanning and programmatic filtering
+  (`gh api gists --jq '.[] | select(.description | startswith("[GTT]"))'`).
+  Applied to both `gist.py` and `setup-gists.py`.
+- Version bump 0.2.6 → 0.2.7
+
+### Added
+- One-off gist rename script (`tests/one-offs/rename_gists.py`) —
+  discovers GTT gists by file signature, renames to `[GTT]` convention.
+  Supports `--dry-run` and reports placeholder gists separately.
+- One-off gist backup script (`tests/one-offs/backup_placeholder_gists.py`) —
+  backs up all placeholder gists before cleanup.
+- One-off gist cleanup script (`tests/one-offs/cleanup_placeholder_gists.py`) —
+  two-phase verify-then-delete with abort-on-suspicious default.
+- 3 e2e gist round-trip tests (`test_gist_e2e.py`) — create, verify,
+  update, and delete real gists via API. Run with `pytest -m e2e`.
+- 2 new gist unit tests — archive description format + internal
+  archive.json description unchanged (138 total: 135 unit + 3 e2e)
+
+### Fixed
+- **Test mock leak creating ghost gists** — `conftest.py` patched
+  `ghtraf.gh.run_gh` but `gist.py` had already imported `run_gh` into
+  its own namespace via `from ... import`. Two non-dry-run tests hit the
+  real API on every `pytest` run, creating 4 orphan gists each time.
+  Fixed by also patching `gist_mod.run_gh` directly.
+- `pytest.ini` excludes e2e tests from default run (`-m "not e2e"`)
+
 ## [0.2.6-alpha] - 2026-02-28
 
 Package-embed templates and dashboard bug fixes.

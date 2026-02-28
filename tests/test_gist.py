@@ -122,13 +122,15 @@ class TestCreateBadgeGist:
         assert "state.json" in payload["files"]
 
     def test_badge_gist_description_includes_repo(self):
-        """Gist description should contain the repo name."""
+        """Gist description should contain the repo name with [GTT] prefix."""
         config = {"gh_repo": "myorg/myproject"}
         fake_response = json.dumps({"id": "x", "html_url": "https://..."})
         with patch("ghtraf.gist.run_gh", return_value=fake_response) as mock:
             create_badge_gist(config)
         payload = json.loads(mock.call_args[1]["input_data"])
+        assert payload["description"].startswith("[GTT]")
         assert "myorg/myproject" in payload["description"]
+        assert "\u00b7 badges" in payload["description"]
 
 
 class TestCreateArchiveGist:
@@ -152,6 +154,17 @@ class TestCreateArchiveGist:
         assert payload["public"] is False
         assert "archive.json" in payload["files"]
 
+    def test_archive_gist_description_format(self):
+        """Archive gist description should use [GTT] prefix."""
+        config = {"gh_repo": "testorg/testrepo"}
+        fake_response = json.dumps({"id": "x", "html_url": "https://..."})
+        with patch("ghtraf.gist.run_gh", return_value=fake_response) as mock:
+            create_archive_gist(config)
+        payload = json.loads(mock.call_args[1]["input_data"])
+        assert payload["description"].startswith("[GTT]")
+        assert "testorg/testrepo" in payload["description"]
+        assert "\u00b7 archive" in payload["description"]
+
     def test_archive_content_has_repo_and_empty_archives(self):
         """archive.json content should reference repo and start with empty archives list."""
         config = {"gh_repo": "testorg/testrepo"}
@@ -162,3 +175,14 @@ class TestCreateArchiveGist:
         archive_content = json.loads(payload["files"]["archive.json"]["content"])
         assert archive_content["repo"] == "testorg/testrepo"
         assert archive_content["archives"] == []
+
+    def test_archive_json_internal_description_unchanged(self):
+        """Internal archive.json description should NOT have [GTT] prefix."""
+        config = {"gh_repo": "testorg/testrepo"}
+        fake_response = json.dumps({"id": "x", "html_url": "https://..."})
+        with patch("ghtraf.gist.run_gh", return_value=fake_response) as mock:
+            create_archive_gist(config)
+        payload = json.loads(mock.call_args[1]["input_data"])
+        archive_content = json.loads(payload["files"]["archive.json"]["content"])
+        assert "Monthly traffic archive for" in archive_content["description"]
+        assert not archive_content["description"].startswith("[GTT]")

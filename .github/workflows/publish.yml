@@ -33,12 +33,12 @@ jobs:
         twine check dist/main/*
         twine check dist/alias/*
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: dist-main
         path: dist/main/
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: dist-alias
         path: dist/alias/

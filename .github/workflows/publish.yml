@@ -55,7 +55,7 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: dist-main
         path: dist/
@@ -75,7 +75,7 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: dist-alias
         path: dist/

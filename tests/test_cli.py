@@ -173,6 +173,23 @@ class TestMainEntryPoint:
         assert "--configure" in captured.out
         assert "--skip-variables" in captured.out
 
+    def test_init_help(self, capsys):
+        """'ghtraf init --help' should show init-specific args."""
+        with pytest.raises(SystemExit) as exc_info:
+            main(["init", "--help"])
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert "--force" in captured.out
+        assert "--skip-existing" in captured.out
+
+    def test_init_in_help_listing(self, capsys):
+        """'ghtraf --help' should list the init command."""
+        with pytest.raises(SystemExit) as exc_info:
+            main(["--help"])
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert "init" in captured.out
+
     def test_unknown_subcommand_fails(self):
         """Unknown subcommand should exit non-zero."""
         with pytest.raises(SystemExit) as exc_info:
@@ -281,3 +298,13 @@ class TestEntryPoints:
         assert result.returncode == 0
         assert "--configure" in result.stdout
         assert "--skip-variables" in result.stdout
+
+    def test_ghtraf_init_help(self):
+        """'ghtraf init --help' should show init-specific flags."""
+        result = subprocess.run(
+            ["ghtraf", "init", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "--force" in result.stdout
+        assert "--skip-existing" in result.stdout

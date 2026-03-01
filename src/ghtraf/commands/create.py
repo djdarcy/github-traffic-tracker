@@ -28,9 +28,9 @@ def register(subparsers, parents):
         parents=parents,
         help="Create gists and set repository variables for traffic tracking",
         description=(
-            "Create the public badge gist and unlisted archive gist needed\n"
-            "by the traffic-badges.yml workflow, then optionally configure\n"
-            "repository variables/secrets and update dashboard files."
+            "Create the public badge gist and unlisted archive gist needed by the\n"
+            "traffic-badges.yml workflow, then optionally configure repository\n"
+            "variables/secrets and update dashboard files."
         ),
         formatter_class=__import__("argparse").RawDescriptionHelpFormatter,
     )
@@ -196,6 +196,7 @@ def run(args):
         print("[DRY RUN MODE - no changes will be made]")
 
     # Prerequisites
+    import ghtraf.hints  # noqa: F401 — register domain hints
     out = get_output()
     print("\nChecking prerequisites...")
     out.emit(1, "  [setup] Checking gh CLI installation...", channel='setup')
@@ -318,6 +319,7 @@ def run(args):
         print_step(step, total_steps,
                    f"Repository secret ({config['gist_token_name']})")
         _guide_token_setup(config, dry_run=dry_run)
+        out.hint('setup.pat', 'verbose')
 
     # Step 4: Configure files (optional)
     if args.configure_files:
@@ -368,6 +370,7 @@ def run(args):
         print("Dry run complete! Re-run without --dry-run to apply.")
     else:
         print("Setup complete!")
+        out.hint('config.remember', 'result')
 
     print(f"\n  Badge Gist ID:   {badge_gist_id}")
     print(f"  Archive Gist ID: {archive_gist_id}")
@@ -402,6 +405,7 @@ def run(args):
               f"-R {config['gh_repo']}")
     if not args.configure_files:
         print("  - Run again with --configure to update dashboard/workflow files")
+        out.hint('setup.configure', 'result')
     print("  - Commit and push your changes")
     print("  - Enable GitHub Pages (Settings > Pages > Deploy from branch "
           "> main, /docs)")

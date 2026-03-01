@@ -13,6 +13,8 @@ import pytest
 # ---------------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEST_DATA_DIR = PROJECT_ROOT / "tests" / "test-data"
+REPOS_DIR = TEST_DATA_DIR / "repos"
+TEST_RUNS_DIR = PROJECT_ROOT / "tests" / "test-runs"
 LEGACY_TEST_DATA_DIR = PROJECT_ROOT / "tests" / "one-offs" / "test_dashboard_data"
 
 
@@ -109,6 +111,101 @@ def sample_global_config(tmp_config_home):
     path = config_dir / "config.json"
     path.write_text(json.dumps(config, indent=2), encoding="utf-8")
     return path, config
+
+
+# ---------------------------------------------------------------------------
+# Real-repo fixtures (snapshot-based integration tests)
+# ---------------------------------------------------------------------------
+@pytest.fixture
+def papers_repo(tmp_path):
+    """Copy the Way-of-Scarcity/papers snapshot into a temporary directory.
+
+    Returns a tmp_path copy that tests can freely modify (run init against,
+    add .git, etc.) without touching the committed fixture.
+
+    Source: https://github.com/Way-of-Scarcity/papers
+    See tests/test-data/repos/papers/SOURCE.md for details.
+    """
+    import shutil
+
+    src = REPOS_DIR / "papers"
+    dest = tmp_path / "papers"
+    shutil.copytree(src, dest)
+    return dest
+
+
+# ---------------------------------------------------------------------------
+# Integration test fixtures (persistent output in test-runs/)
+# ---------------------------------------------------------------------------
+def _force_rmtree(path):
+    """Remove a directory tree, handling Windows read-only files.
+
+    Git pack files (.idx, .pack) are marked read-only on Windows,
+    causing shutil.rmtree to fail with PermissionError. This handler
+    clears the read-only flag before retrying the delete.
+    """
+    import shutil
+    import stat
+
+    def _on_error(func, fpath, exc_info):
+        os.chmod(fpath, stat.S_IWRITE)
+        func(fpath)
+
+    shutil.rmtree(path, onexc=_on_error)
+
+
+@pytest.fixture
+def integration_output():
+    """Provide a persistent output directory in tests/test-runs/.
+
+    Unlike tmp_path, this directory survives across test runs so the
+    user can browse results in their file explorer. Each test gets a
+    named subdirectory. Cleans the subdirectory at the START of the
+    run (so stale results from a previous run don't mislead), but
+    leaves the results after the test finishes.
+    """
+    def _make_output_dir(name):
+        dest = (TEST_RUNS_DIR / name).resolve()
+        assert str(dest).startswith(str(TEST_RUNS_DIR.resolve())), (
+            f"integration_output name {name!r} escapes test-runs/: {dest}"
+        )
+        if dest.exists():
+            _force_rmtree(dest)
+        dest.mkdir(parents=True)
+        return dest
+
+    return _make_output_dir
+
+
+@pytest.fixture(scope="class")
+def live_papers_repo():
+    """Clone Way-of-Scarcity/papers from GitHub into test-runs/.
+
+    This fixture requires network access and is only used by tests
+    marked with @pytest.mark.integration. The clone is shallow
+    (--depth 1) to minimize download size.
+
+    Scoped to class so the clone happens once for all tests in
+    TestInitLiveRepo. Results are retained in test-runs/papers-live/
+    for manual inspection after the test run.
+    """
+    import subprocess
+
+    dest = TEST_RUNS_DIR / "papers-live"
+    if dest.exists():
+        _force_rmtree(dest)
+    dest.mkdir(parents=True)
+
+    result = subprocess.run(
+        ["git", "clone", "--depth", "1",
+         "https://github.com/Way-of-Scarcity/papers.git",
+         str(dest)],
+        capture_output=True, text=True, timeout=60,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"Could not clone papers repo: {result.stderr.strip()}")
+
+    return dest
 
 
 # ---------------------------------------------------------------------------

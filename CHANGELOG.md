@@ -5,6 +5,50 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1-alpha] - 2026-02-28
+
+`ghtraf init` command, output bridge with THAC0 quiet axis, and domain hints.
+
+### Added
+- **`ghtraf init`** (#28) — Copy workflow and dashboard templates from the
+  installed package into a target repository. Supports `--force` (overwrite
+  without prompting), `--skip-existing` (only copy new files), `--dry-run`
+  (preview), and interactive per-file overwrite prompt `[y/N/a(ll)]`.
+  Uses `importlib.resources.files()` for cross-platform template access.
+  Repo discovery priority: `--repo-dir` → `.ghtraf.json` walk-up → `.git`
+  walk-up → cwd.
+- **Domain hints** (`src/ghtraf/hints.py`) — 5 contextual tips registered
+  at import: `setup.dry_run`, `setup.configure`, `api.rate_limit`,
+  `config.remember`, `setup.pat`. Result-context hints fire at verbosity 0,
+  verbose-context hints at level 1+. Hints dedup per session.
+- **output.py THAC0 bridge** (#16) — `print_*()` functions (`print_ok`,
+  `print_warn`, `print_step`, `print_dry`, `print_skip`) now respect the
+  quiet axis via `_should_print()` gate. Suppressed at `-QQQ`, silent at
+  `-QQQQ`. `print_error()` routes through `OutputManager.error()` (shown
+  at `-QQQ`, suppressed only at hard wall `-QQQQ`).
+- **Re-exports** in `output.py` — `OutputManager`, `init_output`,
+  `get_output`, `Hint`, `register_hint`, `register_hints`, `get_hint`,
+  `trace` importable from `ghtraf.output` for convenience.
+- 14 init command tests (`test_init.py`) — template copying, parent dir
+  creation, dry run, skip existing, force overwrite, default prompts,
+  4-tier repo discovery
+- 13 hint tests (`test_hints.py`) — registration, categories, context
+  firing, dedup, hard wall suppression
+- 12 output bridge tests (`test_output.py`) — quiet axis at -1/-2/-3/-4,
+  error routing to stderr, re-export verification
+- 3 CLI integration tests (`test_cli.py`) — init help, init in listing,
+  init entry point via subprocess
+
+### Changed
+- `cli.py` — `init` command registered in `_discover_commands()`, hints
+  imported after `init_output()`
+- `create.py` — 3 `hint()` calls added: `config.remember` after setup
+  complete, `setup.configure` after configure suggestion, `setup.pat`
+  after PAT guidance
+- `output.py` prompt error case uses `print_error()` instead of raw print
+- Version bump 0.3.0 → 0.3.1
+- Test count: 169 → 210 (+41)
+
 ## [0.3.0-alpha] - 2026-02-28
 
 THAC0 verbosity system — structured diagnostic output with named channels.

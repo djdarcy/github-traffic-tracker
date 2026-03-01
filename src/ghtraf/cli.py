@@ -82,10 +82,10 @@ def _discover_commands():
       register(subparsers, parents) — add itself to the subparser
       run(args, global_args) — execute the command
     """
-    from ghtraf.commands import create
+    from ghtraf.commands import create, init
     # Future commands added here:
-    # from ghtraf.commands import init, status, list_cmd, upgrade, verify
-    return [create]
+    # from ghtraf.commands import status, list_cmd, upgrade, verify
+    return [create, init]
 
 
 def _build_parser(commands, common_parser):
@@ -158,6 +158,7 @@ def main(argv=None):
     from ghtraf.lib.log_lib import init_output
     configure_gtt_channels()
     init_output(verbosity=verbosity, channels=channels)
+    import ghtraf.hints  # noqa: F401 — register GTT hints
 
     # Pass 2: parse subcommand + shared/specific args
     common_parser = _build_common_parser()

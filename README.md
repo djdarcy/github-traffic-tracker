@@ -47,6 +47,7 @@ A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download,
 
 ```bash
 pip install github-traffic-tracker
+ghtraf init --repo-dir /path/to/your/repo    # Copy workflow + dashboard templates
 ghtraf create --owner YOUR_ORG --repo YOUR_REPO --configure
 ```
 
@@ -69,7 +70,7 @@ Both options will:
 3. Guide you through creating a PAT with `gist` scope
 4. Optionally configure the dashboard and workflow files (`--configure`)
 
-After setup, copy `.github/workflows/traffic-badges.yml` to your repo, enable GitHub Pages (Settings > Pages > Deploy from branch > main, /docs), and push.
+After setup, enable GitHub Pages (Settings > Pages > Deploy from branch > main, /docs) and push.
 
 ## Verbosity & Diagnostics
 
@@ -125,12 +126,12 @@ GTT is in **early alpha** (v0.3.x). The core workflow and dashboard are function
 - `setup-gists.py` onboarding script
 - `pip install github-traffic-tracker` / `pip install ghtraf`
 - Structured verbosity (`-v`/`-Q`/`--show`) with 8 named output channels
+- `ghtraf init` — copy workflow + dashboard templates into your repo
 
 **In progress:**
 
-- `ghtraf` CLI subcommands beyond `create` ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
-- Template system for workflow/dashboard files (`ghtraf init`)
-- Schema migration tooling
+- `ghtraf` CLI subcommands: `status`, `list`, `verify` ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
+- Schema migration tooling (`ghtraf upgrade`)
 
 **Known limitations:**
 

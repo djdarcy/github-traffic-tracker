@@ -97,6 +97,67 @@ Channel spec syntax: `CHANNEL[:LEVEL]`. When LEVEL is omitted, the channel is sh
 
 ## Commands
 
+### `ghtraf init`
+
+Copy workflow and dashboard template files into a target repository.
+
+```bash
+ghtraf init                                 # Copy templates to cwd (prompts on existing)
+ghtraf init --repo-dir /path/to/repo        # Specify target directory
+ghtraf init --force                         # Overwrite existing files without prompting
+ghtraf init --skip-existing                 # Only copy files that don't exist yet
+ghtraf init --dry-run                       # Preview what would be copied
+```
+
+#### Init Options
+
+| Flag | Description |
+|------|-------------|
+| `--force` | Overwrite existing files without prompting |
+| `--skip-existing` | Skip files that already exist (only copy new ones) |
+
+`--force` and `--skip-existing` are mutually exclusive. Without either, init prompts per file: `[y/N/a(ll)]`.
+
+#### What it copies
+
+```
+src/ghtraf/templates/          →  {target-repo}/
+├── .github/workflows/             .github/workflows/
+│   └── traffic-badges.yml         └── traffic-badges.yml
+└── docs/stats/                    docs/stats/
+    ├── index.html                 ├── index.html
+    ├── README.md                  ├── README.md
+    └── favicon.svg                └── favicon.svg
+```
+
+#### Repo discovery
+
+If `--repo-dir` is not specified, init discovers the target directory by:
+
+1. Walking up from cwd looking for `.ghtraf.json`
+2. Walking up from cwd looking for `.git`
+3. Falling back to the current working directory
+
+#### Init Examples
+
+```bash
+# Set up a new repo from scratch
+ghtraf init --repo-dir /path/to/my-repo
+ghtraf create --owner djdarcy --repo my-repo --configure
+
+# Preview what would be copied
+ghtraf init --dry-run --repo-dir /path/to/my-repo
+
+# Re-initialize, keeping customized files
+ghtraf init --skip-existing --repo-dir /path/to/my-repo
+
+# Force-overwrite all templates (e.g., after a GTT upgrade)
+ghtraf init --force --repo-dir /path/to/my-repo
+
+# See setup channel diagnostics
+ghtraf -v init --repo-dir /path/to/my-repo
+```
+
 ### `ghtraf create`
 
 Create gists and configure a repository for traffic tracking.

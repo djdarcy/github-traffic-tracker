@@ -14,14 +14,14 @@ Templates copied::
 """
 
 import shutil
-import sys
 from importlib.resources import as_file, files
 from pathlib import Path
 
 from ghtraf.config import find_project_config
 from ghtraf.lib.log_lib import get_output
 from ghtraf.output import (
-    print_dry, print_ok, print_skip, print_step, print_warn,
+    print_banner, print_dry, print_info, print_ok, print_skip,
+    print_step, print_warn,
 )
 
 
@@ -90,13 +90,15 @@ def _discover_repo_dir(args):
                 # .git found in a parent dir — confirm before using
                 non_interactive = getattr(args, 'non_interactive', False)
                 if not non_interactive:
-                    print(f"\n  No .ghtraf.json found in current directory.")
-                    print(f"  Found git repository at: {current}")
+                    print_info(
+                                f"\n  No .ghtraf.json found in current directory.\n"
+                                f"  Found git repository at: {current}"
+                    )
                     response = input(
                         "  Use this directory? [Y/n]: "
                     ).strip().lower()
                     if response in ('n', 'no'):
-                        print(f"  Using current directory instead: {cwd}")
+                        print_info(f"  Using current directory instead: {cwd}")
                         return cwd
                 else:
                     print_warn(
@@ -139,7 +141,7 @@ def _prompt_overwrite(rel_path, non_interactive):
             return 'y'
         if response in ('a', 'all'):
             return 'a'
-        print("  Please enter y, n, or a.")
+        print_info("  Please enter y, n, or a.")
 
 
 def run(args):
@@ -154,13 +156,10 @@ def run(args):
     repo_dir = _discover_repo_dir(args)
     out.emit(1, "  [setup] Target directory: {d}", channel='setup', d=repo_dir)
 
-    print()
-    print("ghtraf init — Copy template files")
-    print("=" * 40)
+    print_banner("\nghtraf init — Copy template files\n" + "=" * 40)
     if dry_run:
-        print("[DRY RUN MODE — no files will be written]")
-    print(f"  Target: {repo_dir}")
-    print()
+        print_info("[DRY RUN MODE — no files will be written]")
+    print_info(f"  Target: {repo_dir}\n")
 
     # Copy each template file
     template_root = _get_template_root()
@@ -213,17 +212,17 @@ def run(args):
             copied += 1
 
     # Summary
-    print()
+    print_info("")
     if dry_run:
-        print(f"  Would copy {copied} file(s), skip {skipped} file(s).")
+        print_info(f"  Would copy {copied} file(s), skip {skipped} file(s).")
     else:
-        print(f"  Copied {copied} file(s), skipped {skipped} file(s).")
+        print_info(f"  Copied {copied} file(s), skipped {skipped} file(s).")
 
     if copied > 0 and not dry_run:
         import ghtraf.hints  # noqa: F401
         out.hint('setup.configure', 'result')
-        print()
-        print("  Next: Run 'ghtraf create --configure' to fill in project values.")
+        print_info("")
+        print_info("  Next: Run 'ghtraf create --configure' to fill in project values.")
 
-    print()
+    print_info("")
     return 0

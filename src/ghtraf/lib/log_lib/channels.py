@@ -22,7 +22,7 @@ Expanded flags (like --iter-* pattern):
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Optional, TextIO
 
 
 # Channels currently used in the codebase
@@ -70,12 +70,18 @@ OPT_IN_CHANNELS = {
 class ChannelConfig:
     """Configuration for a single output channel.
 
-    v0.8.3 implements: name, level
-    Future (DazzleLib): destination, location, format
+    Attributes:
+        name: Channel identifier
+        level: Default verbosity level override (0 = global default)
+        fd: Default output file handle for this channel (None = use manager default)
+        destination: Future (DazzleLib) — 'stderr', 'stdout', 'file', 'fdN'
+        location: Future (DazzleLib) — File path for file dest
+        format: Future (DazzleLib) — 'text', 'json', 'csv'
     """
     name: str
     level: int = 0
-    # Stubs for future use — stored but not routed in v0.8.3
+    fd: Optional[TextIO] = None          # Channel's default output FD
+    # Stubs for future use — stored but not routed yet
     destination: Optional[str] = None    # 'stderr', 'stdout', 'file', 'fdN'
     location: Optional[str] = None       # File path for file dest
     format: Optional[str] = None         # 'text', 'json', 'csv'

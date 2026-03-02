@@ -5,6 +5,42 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2-alpha] - 2026-03-02
+
+Unify output system — channel-owned FDs, graduated quiet axis, block text.
+
+### Changed
+- **output.py rewrite** (#59) — All `print_*()` functions now route through
+  `OutputManager.emit()` with per-function semantic levels. Removed the
+  `_should_print()` gate (which had a -QQ dead zone); replaced with
+  graduated quiet axis: `-Q` hides hints, `-QQ` hides info/ok/skip/dry/
+  step/banner, `-QQQ` hides warnings, `-QQQQ` hard wall. Added `file=`
+  parameter for per-message FD override. New functions: `print_info()`,
+  `print_banner()`.
+- **4-layer FD resolution** in `log_lib/manager.py` — `file=` on emit() >
+  `set_channel_fd()` > `channel_fds` init dict > manager default. String
+  sentinels `'stdout'`/`'stderr'` resolved at call time for pytest capsys
+  compatibility.
+- **Channel FD configuration** — GTT configures general/hint → stdout,
+  everything else → stderr via `GTT_CHANNEL_FDS` dict in `channels.py`.
+  `configure_gtt_channels()` returns FD mapping passed to `init_output()`.
+- **Raw print() migration** — All remaining `print()` calls in `gh.py`,
+  `create.py`, `init.py`, `configure.py`, `gist.py` replaced with
+  `print_info`/`print_error`/`print_banner`.
+- **Block text consolidation** — Repetitive line-by-line `print_*()` calls
+  consolidated into single multi-line calls using `\n` string concatenation
+  with content aligned to the opening quote column.
+- `log_lib/channels.py` — `fd` field added to `ChannelConfig` dataclass
+- `test_output.py` rewrite — 24 tests (was 16): graduated quiet axis,
+  channel FD routing, FD resolution order, format tests for new functions
+- `test_init.py` — check both stdout+stderr for walkup warning
+- Version bump 0.3.1 → 0.3.2
+- Test count: 219 → 227 (+8)
+
+### Fixed
+- Variable shadowing bug in `create.py`: `configure = 'yes'...` shadowed
+  the `configure` module import; renamed to `will_configure`
+
 ## [0.3.1-alpha] - 2026-02-28
 
 `ghtraf init` command, output bridge with THAC0 quiet axis, and domain hints.

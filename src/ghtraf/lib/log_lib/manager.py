@@ -56,10 +56,52 @@ class OutputManager:
         self.verbosity = verbosity
         self.channel_overrides: Dict[str, int] = dict(channel_overrides or {})
         self.file = file if file is not None else sys.stderr
+        self.channel_fds: Dict[str, TextIO] = {}
         self._shown_hints: Set[str] = set()
 
+    def set_channel_fd(self, channel: str, fd: TextIO) -> None:
+        """Set the output file handle for a channel at runtime.
+
+        Commands can call this to redirect a channel's output for
+        the duration of their execution. This overrides the channel's
+        default fd from ChannelConfig but is itself overridden by the
+        per-message ``file=`` parameter on emit().
+
+        FD resolution order (highest priority first):
+            1. file= on emit() call (per-message)
+            2. set_channel_fd() (runtime command override)
+            3. ChannelConfig.fd (channel default from channels.py)
+            4. self.file (manager default — stderr)
+
+        Args:
+            channel: Channel name
+            fd: File handle (e.g., sys.stdout, sys.stderr)
+        """
+        self.channel_fds[channel] = fd
+
+    def _resolve_fd(self, channel: str, file: TextIO = None) -> TextIO:
+        """Resolve the output file handle for a message.
+
+        4-layer resolution: file= > channel_fds > ChannelConfig.fd > self.file
+
+        String sentinels 'stdout' and 'stderr' are resolved to the current
+        sys.stdout/sys.stderr at call time (not at init time), which is
+        necessary for test frameworks that replace these at runtime.
+        """
+        if file is not None:
+            return file
+        fd = self.channel_fds.get(channel)
+        if fd is None:
+            return self.file
+        if fd == 'stdout':
+            return sys.stdout
+        if fd == 'stderr':
+            return sys.stderr
+        return fd
+
     def emit(self, level: int, message: str, *,
-             channel: str = 'general', **kwargs: Any) -> None:
+             channel: str = 'general', file: TextIO = None,
+             **kwargs: Any) -> None:
         """Emit a message if level <= threshold for that channel.
 
         The threshold is the per-channel override if set, otherwise
@@ -70,6 +112,7 @@ class OutputManager:
             level: Message level (higher = more verbose)
             message: Format string (uses str.format with kwargs)
             channel: Output channel name
+            file: Per-message output override (highest priority FD)
             **kwargs: Values for template placeholders
         """
         threshold = self.channel_overrides.get(channel, self.verbosity)
@@ -78,7 +121,8 @@ class OutputManager:
         if level > threshold:
             return
         text = message.format(**kwargs) if kwargs else message
-        print(text, file=self.file)
+        dest = self._resolve_fd(channel, file)
+        print(text, file=dest)
 
     def hint(self, hint_id: str, context: str = 'result', **kwargs: Any) -> None:
         """Show a hint if appropriate for context, level, and not yet shown.
@@ -110,7 +154,8 @@ class OutputManager:
         if h.min_level > threshold:
             return
 
-        print(text, file=self.file)
+        dest = self._resolve_fd('hint')
+        print(text, file=dest)
         self._shown_hints.add(hint_id)
 
     def progress(self, count: int, elapsed: float) -> None:
@@ -118,13 +163,17 @@ class OutputManager:
         self.emit(1, "  ... {count} results ({elapsed:.1f}s)",
                   channel='progress', count=count, elapsed=elapsed)
 
-    def error(self, message: str) -> None:
+    def error(self, message: str, *, file: TextIO = None) -> None:
         """Emit an error message (level -3, shown unless at hard wall).
 
         In the THAC0 model, errors are just emit(-3, ...). They show
         at any verbosity >= -3 (i.e., everything except -QQQQ).
+
+        Args:
+            message: Error message text
+            file: Per-message output override
         """
-        self.emit(-3, message, channel='error')
+        self.emit(-3, message, channel='error', file=file)
 
     def channel_active(self, channel: str) -> bool:
         """Check if a channel would display messages at its default level.
@@ -160,7 +209,8 @@ _manager: Optional[OutputManager] = None
 
 
 def init_output(verbosity: int = 0, quiet: bool = False,
-                channels: list = None) -> OutputManager:
+                channels: list = None,
+                channel_fds: Dict[str, TextIO] = None) -> OutputManager:
     """Initialize the module-level OutputManager singleton.
 
     Call once at program startup after parsing CLI arguments.
@@ -169,6 +219,9 @@ def init_output(verbosity: int = 0, quiet: bool = False,
         verbosity: THAC0 verbosity level (0=default, positive=verbose, negative=quiet)
         quiet: Legacy backward compat — if True, sets verbosity to min(verbosity, -1)
         channels: List of channel spec strings (e.g., ['timing:2', 'vals'])
+        channel_fds: Default output FDs per channel (e.g., {'general': sys.stdout}).
+            These populate the manager's channel_fds dict, acting as layer 3
+            in the FD resolution hierarchy (below file= and set_channel_fd).
 
     Returns:
         The initialized OutputManager instance
@@ -192,6 +245,12 @@ def init_output(verbosity: int = 0, quiet: bool = False,
         verbosity=verbosity,
         channel_overrides=channel_overrides,
     )
+
+    # Apply channel FD defaults
+    if channel_fds:
+        for ch, fd in channel_fds.items():
+            _manager.channel_fds[ch] = fd
+
     return _manager
 
 

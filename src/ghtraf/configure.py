@@ -8,7 +8,7 @@ import json
 import re
 from pathlib import Path
 
-from ghtraf.output import print_dry, print_ok, print_skip, print_warn
+from ghtraf.output import print_dry, print_info, print_ok, print_skip, print_warn
 
 
 def apply_replacements(filepath, replacements, config, dry_run=False):
@@ -63,7 +63,7 @@ def configure_dashboard(config, dashboard_path, dry_run=False):
     Returns:
         Count of successful replacements.
     """
-    print(f"  Updating {dashboard_path}...")
+    print_info(f"  Updating {dashboard_path}...")
 
     replacements = [
         # HTML title
@@ -124,7 +124,7 @@ def configure_readme(config, readme_path, dry_run=False):
     Returns:
         Count of successful replacements.
     """
-    print(f"  Updating {readme_path}...")
+    print_info(f"  Updating {readme_path}...")
 
     config = dict(config)  # copy to avoid mutating caller's dict
     config["owner_lower"] = config["owner"].lower()
@@ -158,7 +158,7 @@ def configure_workflow(config, workflow_path, dry_run=False):
     Returns:
         Count of changes made.
     """
-    print(f"  Updating {workflow_path}...")
+    print_info(f"  Updating {workflow_path}...")
 
     workflow_path = Path(workflow_path)
     if not workflow_path.exists():

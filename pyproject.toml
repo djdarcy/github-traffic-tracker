@@ -54,3 +54,12 @@ include = ["ghtraf*"]
 
 [tool.setuptools.package-data]
 ghtraf = ["templates/**/*"]
+
+[tool.ruff.lint]
+# E241: multiple spaces before argument — used for visual alignment
+# E131: continuation line unaligned — used for quote-column alignment
+ignore = ["E241", "E131"]
+
+[tool.autopep8]
+# Preserve intentional string alignment in multi-line print_*() blocks
+ignore = ["E241", "E131"]

@@ -1,8 +1,18 @@
 """Output formatting utilities for ghtraf.
 
-Consistent message formatting across all commands.  Bridges the
-print_*() functions with the THAC0 verbosity system — print functions
-respect the quiet axis at extreme levels (-QQQ, -QQQQ).
+Consistent message formatting across all commands.  Each print_*()
+function routes through OutputManager.emit() with an appropriate level
+and channel, participating fully in THAC0 verbosity gating.
+
+Graduated quiet axis:
+    -Q  (-1)  hides hints (level 0)
+    -QQ (-2)  hides info/ok/skip/dry/step/banner (level -1)
+    -QQQ(-3)  hides warnings (level -2)
+    -QQQQ(-4) hard wall — nothing at all
+
+Channel FD routing:
+    print_error()  → 'error' channel  (default: stderr)
+    all others     → 'general' channel (default: stdout when configured)
 
 Also re-exports the log_lib public API for convenience imports.
 """
@@ -17,65 +27,110 @@ from ghtraf.lib.log_lib import (                     # noqa: F401
 )
 
 
-def _should_print():
-    """Check if user-facing print_*() calls should display.
+# ---------------------------------------------------------------------------
+# Print functions — route through emit()
+# ---------------------------------------------------------------------------
 
-    These are effectively level -2 (WARNING) messages — they show at
-    verbosity -2 and above, but are suppressed at -3 (errors only)
-    and -4 (hard wall / silent).
+def print_step(n, total, msg, *, file=None):
+    """Print a formatted step header.
 
-    Returns True before OutputManager is initialized (pre-init safety).
+    Level -1 (MINIMAL): hidden at -QQ and below.
     """
     try:
         out = get_output()
-        if out.verbosity <= -4:
-            return False
-        return -2 <= out.verbosity
+        out.emit(-1, f"\n== Step {n}/{total}: {msg} ==",
+                 channel='general', file=file)
     except Exception:
-        return True
+        print(f"\n== Step {n}/{total}: {msg} ==", file=file or sys.stdout)
 
 
-def print_step(n, total, msg):
-    """Print a formatted step header."""
-    if _should_print():
-        print(f"\n== Step {n}/{total}: {msg} ==")
+def print_ok(msg, *, file=None):
+    """Print a success message.
 
-
-def print_ok(msg):
-    """Print a success message."""
-    if _should_print():
-        print(f"  [OK] {msg}")
-
-
-def print_dry(msg):
-    """Print a dry-run message."""
-    if _should_print():
-        print(f"  [DRY RUN] {msg}")
-
-
-def print_warn(msg):
-    """Print a warning message."""
-    if _should_print():
-        print(f"  [WARN] {msg}")
-
-
-def print_skip(msg):
-    """Print a skip message."""
-    if _should_print():
-        print(f"  [SKIP] {msg}")
-
-
-def print_error(msg):
-    """Print an error message to stderr.
-
-    Routes through OutputManager.error() which emits at level -3.
-    Shown at all verbosity levels except hard wall (-QQQQ / -4).
+    Level -1 (MINIMAL): hidden at -QQ and below.
     """
     try:
         out = get_output()
-        out.error(f"  ERROR: {msg}")
+        out.emit(-1, f"  [OK] {msg}", channel='general', file=file)
     except Exception:
-        print(f"  ERROR: {msg}", file=sys.stderr)
+        print(f"  [OK] {msg}", file=file or sys.stdout)
+
+
+def print_dry(msg, *, file=None):
+    """Print a dry-run message.
+
+    Level -1 (MINIMAL): hidden at -QQ and below.
+    """
+    try:
+        out = get_output()
+        out.emit(-1, f"  [DRY RUN] {msg}", channel='general', file=file)
+    except Exception:
+        print(f"  [DRY RUN] {msg}", file=file or sys.stdout)
+
+
+def print_warn(msg, *, file=None):
+    """Print a warning message.
+
+    Level -2 (WARNING): hidden at -QQQ and below.
+    """
+    try:
+        out = get_output()
+        out.emit(-2, f"  [WARN] {msg}", channel='general', file=file)
+    except Exception:
+        print(f"  [WARN] {msg}", file=file or sys.stdout)
+
+
+def print_skip(msg, *, file=None):
+    """Print a skip message.
+
+    Level -1 (MINIMAL): hidden at -QQ and below.
+    """
+    try:
+        out = get_output()
+        out.emit(-1, f"  [SKIP] {msg}", channel='general', file=file)
+    except Exception:
+        print(f"  [SKIP] {msg}", file=file or sys.stdout)
+
+
+def print_error(msg, *, file=None):
+    """Print an error message.
+
+    Level -3 (ERROR): shown at all verbosity levels except hard wall (-QQQQ).
+    Routes through the 'error' channel (default: stderr).
+    """
+    try:
+        out = get_output()
+        out.emit(-3, f"  ERROR: {msg}", channel='error', file=file)
+    except Exception:
+        print(f"  ERROR: {msg}", file=file or sys.stderr)
+
+
+def print_info(msg, *, file=None):
+    """Print an informational message.
+
+    Level -1 (MINIMAL): hidden at -QQ and below.
+    Use for status lines, summaries, and other user-facing text
+    that was previously raw print().
+    """
+    try:
+        out = get_output()
+        out.emit(-1, msg, channel='general', file=file)
+    except Exception:
+        print(msg, file=file or sys.stdout)
+
+
+def print_banner(msg, *, file=None):
+    """Print a banner/header message.
+
+    Level -1 (MINIMAL): hidden at -QQ and below.
+    Use for command headers, separators, and section titles
+    that were previously raw print().
+    """
+    try:
+        out = get_output()
+        out.emit(-1, msg, channel='general', file=file)
+    except Exception:
+        print(msg, file=file or sys.stdout)
 
 
 def prompt(label, default=None, required=True):

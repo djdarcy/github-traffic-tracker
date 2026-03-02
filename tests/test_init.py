@@ -269,7 +269,8 @@ class TestInitRepoDiscovery:
                 result = _discover_repo_dir(args)
         assert result == parent
         captured = capsys.readouterr()
-        assert "parent git repo" in captured.out.lower() or "WARN" in captured.out
+        all_output = captured.out + captured.err
+        assert "parent git repo" in all_output.lower() or "WARN" in all_output
 
     def test_git_in_cwd_no_prompt(self, tmp_path):
         """When .git is in cwd itself, no confirmation prompt fires."""

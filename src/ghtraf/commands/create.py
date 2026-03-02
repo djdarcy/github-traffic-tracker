@@ -17,7 +17,8 @@ from ghtraf import gh, gist, configure
 from ghtraf.config import register_repo_globally, save_project_config
 from ghtraf.lib.log_lib import get_output
 from ghtraf.output import (
-    print_dry, print_ok, print_skip, print_step, print_warn, prompt,
+    print_banner, print_dry, print_error, print_info, print_ok,
+    print_skip, print_step, print_warn, prompt,
 )
 
 
@@ -63,7 +64,7 @@ def _gather_config(args):
     if args.owner:
         config["owner"] = args.owner
     elif non_interactive:
-        print("ERROR: --owner is required in non-interactive mode.")
+        print_error("--owner is required in non-interactive mode.")
         sys.exit(1)
     else:
         config["owner"] = prompt("GitHub owner (username or org)")
@@ -72,7 +73,7 @@ def _gather_config(args):
     if args.repo:
         config["repo"] = args.repo
     elif non_interactive:
-        print("ERROR: --repo is required in non-interactive mode.")
+        print_error("--repo is required in non-interactive mode.")
         sys.exit(1)
     else:
         config["repo"] = prompt("Repository name")
@@ -135,15 +136,17 @@ def _gather_config(args):
 def _validate_config(config):
     """Validate configuration values."""
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", config["created"]):
-        print(f"ERROR: Invalid date format '{config['created']}'. "
-              "Expected YYYY-MM-DD.")
+        print_error(f"Invalid date format '{config['created']}'. "
+                    "Expected YYYY-MM-DD.")
         sys.exit(1)
 
     repo_exists = gh.check_repo_exists(config["gh_repo"])
     if not repo_exists:
         print_warn(f"Repository {config['gh_repo']} not found on GitHub.")
-        print("  This is OK if you haven't created it yet.")
-        print("  Repository variables/secrets will be set once it exists.")
+        print_info(
+                    "  This is OK if you haven't created it yet.\n"
+                    "  Repository variables/secrets will be set once it exists."
+        )
 
 
 def _guide_token_setup(config, dry_run=False):
@@ -151,24 +154,24 @@ def _guide_token_setup(config, dry_run=False):
     token_name = config.get("gist_token_name", "TRAFFIC_GIST_TOKEN")
     gh_repo = config["gh_repo"]
 
-    print()
-    print("  The workflow needs a Personal Access Token (PAT) with 'gist' scope")
-    print("  to update your gists. This is SEPARATE from your gh CLI token.")
-    print()
-    print("  To create one:")
-    print(f"    1. Go to: https://github.com/settings/tokens/new")
-    print(f"    2. Name it: \"Traffic Tracker - {gh_repo}\"")
-    print("    3. Check ONLY the 'gist' scope")
-    print("    4. Set expiration (recommended: no expiration, or 1 year)")
-    print("    5. Click 'Generate token' and copy the value")
-    print()
+    print_info( "\n"
+                "  The workflow needs a Personal Access Token (PAT) with 'gist' scope\n"
+                "  to update your gists. This is SEPARATE from your gh CLI token.\n"
+                "\n"
+                "  To create one:\n"
+                f"    1. Go to: https://github.com/settings/tokens/new\n"
+                f"    2. Name it: \"Traffic Tracker - {gh_repo}\"\n"
+                "    3. Check ONLY the 'gist' scope\n"
+                "    4. Set expiration (recommended: no expiration, or 1 year)\n"
+                "    5. Click 'Generate token' and copy the value\n"
+    )
 
     if dry_run:
         print_dry(f"Would prompt for PAT and set secret {token_name}")
         return
 
     if config.get("non_interactive"):
-        print(f"  Then run: gh secret set {token_name} -R {gh_repo}")
+        print_info(f"  Then run: gh secret set {token_name} -R {gh_repo}")
         return
 
     token = input("  Paste your PAT here (or press Enter to skip): ").strip()
@@ -176,12 +179,12 @@ def _guide_token_setup(config, dry_run=False):
         success = gh.set_repo_secret(token_name, token, gh_repo)
         if not success:
             print_warn("Could not set secret.")
-            print(f"  Run manually: gh secret set {token_name} -R {gh_repo}")
+            print_info(f"  Run manually: gh secret set {token_name} -R {gh_repo}")
         else:
             print_ok(f"Secret {token_name} set successfully")
     else:
         print_skip("PAT not provided")
-        print(f"  Remember to run: gh secret set {token_name} -R {gh_repo}")
+        print_info(f"  Remember to run: gh secret set {token_name} -R {gh_repo}")
 
 
 def run(args):
@@ -189,16 +192,14 @@ def run(args):
     dry_run = args.dry_run
 
     # Header
-    print()
-    print("GitHub Traffic Tracker Setup")
-    print("=" * 40)
+    print_banner("\nGitHub Traffic Tracker Setup\n" + "=" * 40)
     if dry_run:
-        print("[DRY RUN MODE - no changes will be made]")
+        print_info("[DRY RUN MODE - no changes will be made]")
 
     # Prerequisites
     import ghtraf.hints  # noqa: F401 — register domain hints
     out = get_output()
-    print("\nChecking prerequisites...")
+    print_info("\nChecking prerequisites...")
     out.emit(1, "  [setup] Checking gh CLI installation...", channel='setup')
     version = gh.check_gh_installed()
     print_ok(f"gh CLI found ({version})")
@@ -213,8 +214,8 @@ def run(args):
 
     has_gist_scope = gh.check_gh_scopes(auth_output)
     if not has_gist_scope:
-        print_warn("Your gh CLI token may not have 'gist' scope.")
-        print("  Run: gh auth refresh -s gist")
+        print_warn("Your gh CLI token may not have 'gist' scope.\n"
+                   "  Run: gh auth refresh -s gist")
         if not args.non_interactive:
             resp = input("  Continue anyway? (y/N): ").strip().lower()
             if resp != "y":
@@ -226,7 +227,7 @@ def run(args):
     print_ok(f"GitHub username: {gh_username}")
 
     # Configuration
-    print("\nGathering configuration...")
+    print_info("\nGathering configuration...")
     out.emit(1, "  [setup] Gathering configuration (interactive={interactive})",
              channel='setup', interactive=not args.non_interactive)
     config = _gather_config(args)
@@ -248,21 +249,23 @@ def run(args):
     if not args.skip_variables:
         total_steps += 1
 
-    print(f"\n  Owner:        {config['owner']}")
-    print(f"  Repository:   {config['repo']}")
-    print(f"  Created:      {config['created']}")
-    print(f"  Display Name: {config['display_name']}")
-    if config["ci_workflows"]:
-        print(f"  CI Workflows: {', '.join(config['ci_workflows'])}")
-    else:
-        print("  CI Workflows: (none)")
-    print(f"  Configure:    {'yes' if args.configure_files else 'no'}")
+    ci_display = (', '.join(config['ci_workflows'])
+                   if config['ci_workflows'] else '(none)')
+    will_configure = 'yes' if args.configure_files else 'no'
+    print_info( f"\n"
+                f"  Owner:        {config['owner']}\n"
+                f"  Repository:   {config['repo']}\n"
+                f"  Created:      {config['created']}\n"
+                f"  Display Name: {config['display_name']}\n"
+                f"  CI Workflows: {ci_display}\n"
+                f"  Configure:    {will_configure}"
+    )
 
     if not args.non_interactive and not dry_run:
-        print()
+        print_info("")
         resp = input("  Proceed? (Y/n): ").strip().lower()
         if resp == "n":
-            print("  Setup cancelled.")
+            print_info("  Setup cancelled.")
             return 0
 
     # Step 1: Create badge gist
@@ -298,8 +301,8 @@ def run(args):
             print_ok(f"TRAFFIC_GIST_ID = {badge_gist_id}")
         else:
             print_warn("Could not set TRAFFIC_GIST_ID")
-            print(f"  Run manually: gh variable set TRAFFIC_GIST_ID "
-                  f"--body \"{badge_gist_id}\" -R {config['gh_repo']}")
+            print_info(f"  Run manually: gh variable set TRAFFIC_GIST_ID "
+                       f"--body \"{badge_gist_id}\" -R {config['gh_repo']}")
 
         success = gh.set_repo_variable(
             "TRAFFIC_ARCHIVE_GIST_ID", archive_gist_id,
@@ -311,8 +314,8 @@ def run(args):
             print_ok(f"TRAFFIC_ARCHIVE_GIST_ID = {archive_gist_id}")
         else:
             print_warn("Could not set TRAFFIC_ARCHIVE_GIST_ID")
-            print(f"  Run manually: gh variable set TRAFFIC_ARCHIVE_GIST_ID "
-                  f"--body \"{archive_gist_id}\" -R {config['gh_repo']}")
+            print_info(f"  Run manually: gh variable set TRAFFIC_ARCHIVE_GIST_ID "
+                       f"--body \"{archive_gist_id}\" -R {config['gh_repo']}")
 
         # PAT guidance
         step += 1
@@ -364,54 +367,55 @@ def run(args):
         )
 
     # Summary
-    print()
-    print("=" * 40)
+    print_banner("\n" + "=" * 40)
     if dry_run:
-        print("Dry run complete! Re-run without --dry-run to apply.")
+        print_info("Dry run complete! Re-run without --dry-run to apply.")
     else:
-        print("Setup complete!")
+        print_info("Setup complete!")
         out.hint('config.remember', 'result')
-
-    print(f"\n  Badge Gist ID:   {badge_gist_id}")
-    print(f"  Archive Gist ID: {archive_gist_id}")
 
     gist_base = (f"https://gist.githubusercontent.com/"
                  f"{gh_username}/{badge_gist_id}/raw")
-    print(f"\nBadge URLs:")
-    print(f"  Installs:  https://img.shields.io/endpoint?url="
-          f"{gist_base}/installs.json")
-    print(f"  Downloads: https://img.shields.io/endpoint?url="
-          f"{gist_base}/downloads.json")
-    print(f"  Clones:    https://img.shields.io/endpoint?url="
-          f"{gist_base}/clones.json")
-    print(f"  Views:     https://img.shields.io/endpoint?url="
-          f"{gist_base}/views.json")
-
-    print(f"\nBadge Markdown (copy-paste for README):")
     shield_base = "https://img.shields.io/endpoint?url=" + gist_base
     owner_lower = config["owner"].lower()
     stats_url = f"https://{owner_lower}.github.io/{config['repo']}/stats/"
-    print(f'  [![Installs]({shield_base}/installs.json)]({stats_url}#installs)')
 
-    print(f"\nNext steps:")
+    print_info( f"\n"
+                f"  Badge Gist ID:   {badge_gist_id}\n"
+                f"  Archive Gist ID: {archive_gist_id}\n"
+                f"\n"
+                f"Badge URLs:\n"
+                f"  Installs:  {shield_base}/installs.json\n"
+                f"  Downloads: {shield_base}/downloads.json\n"
+                f"  Clones:    {shield_base}/clones.json\n"
+                f"  Views:     {shield_base}/views.json\n"
+                f"\n"
+                f"Badge Markdown (copy-paste for README):\n"
+                f"  [![Installs]({shield_base}/installs.json)]({stats_url}#installs)"
+    )
+
+    print_info("\nNext steps:")
     if args.skip_variables:
-        print(f"  1. Set repo variables:")
-        print(f"     gh variable set TRAFFIC_GIST_ID "
-              f"--body \"{badge_gist_id}\" -R {config['gh_repo']}")
-        print(f"     gh variable set TRAFFIC_ARCHIVE_GIST_ID "
-              f"--body \"{archive_gist_id}\" -R {config['gh_repo']}")
-        print(f"  2. Set repo secret with a PAT (gist scope):")
-        print(f"     gh secret set {config['gist_token_name']} "
-              f"-R {config['gh_repo']}")
+        print_info(
+                    f"  1. Set repo variables:\n"
+                    f"     gh variable set TRAFFIC_GIST_ID "
+                    f"--body \"{badge_gist_id}\" -R {config['gh_repo']}\n"
+                    f"     gh variable set TRAFFIC_ARCHIVE_GIST_ID "
+                    f"--body \"{archive_gist_id}\" -R {config['gh_repo']}\n"
+                    f"  2. Set repo secret with a PAT (gist scope):\n"
+                    f"     gh secret set {config['gist_token_name']} "
+                    f"-R {config['gh_repo']}"
+        )
     if not args.configure_files:
-        print("  - Run again with --configure to update dashboard/workflow files")
+        print_info("  - Run again with --configure to update dashboard/workflow files")
         out.hint('setup.configure', 'result')
-    print("  - Commit and push your changes")
-    print("  - Enable GitHub Pages (Settings > Pages > Deploy from branch "
-          "> main, /docs)")
-    print("  - Trigger the workflow manually or wait for the 3am UTC schedule:")
-    print(f"    gh workflow run \"Track Downloads & Clones\" "
-          f"-R {config['gh_repo']}")
-    print()
+    print_info(
+                f"  - Commit and push your changes\n"
+                f"  - Enable GitHub Pages (Settings > Pages > Deploy from branch "
+                f"> main, /docs)\n"
+                f"  - Trigger the workflow manually or wait for the 3am UTC schedule:\n"
+                f"    gh workflow run \"Track Downloads & Clones\" "
+                f"-R {config['gh_repo']}\n"
+    )
 
     return 0

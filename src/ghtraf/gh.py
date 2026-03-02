@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 
+from ghtraf.output import print_error, print_info
+
 
 def run_gh(args, input_data=None, check=True):
     """Run a gh CLI command, return stdout.
@@ -29,8 +31,8 @@ def run_gh(args, input_data=None, check=True):
         input=input_data
     )
     if check and result.returncode != 0:
-        print(f"  ERROR: gh {' '.join(args[:3])}...", file=sys.stderr)
-        print(f"  {result.stderr.strip()}", file=sys.stderr)
+        print_error(f"gh {' '.join(args[:3])}...")
+        print_error(result.stderr.strip())
         sys.exit(1)
     return result.stdout.strip()
 
@@ -45,13 +47,14 @@ def check_gh_installed():
         SystemExit: If gh is not installed.
     """
     if shutil.which("gh") is None:
-        print("ERROR: gh CLI not found.")
-        print()
-        print("  Install it from: https://cli.github.com")
-        print("  Or via package manager:")
-        print("    Windows:  winget install GitHub.cli")
-        print("    macOS:    brew install gh")
-        print("    Linux:    See https://github.com/cli/cli/blob/trunk/docs/install_linux.md")
+        print_error("gh CLI not found.")
+        print_info( "\n"
+                    "  Install it from: https://cli.github.com\n"
+                    "  Or via package manager:\n"
+                    "    Windows:  winget install GitHub.cli\n"
+                    "    macOS:    brew install gh\n"
+                    "    Linux:    See https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+        )
         sys.exit(1)
 
     version = subprocess.run(
@@ -75,10 +78,11 @@ def check_gh_authenticated():
     )
     output = result.stdout + result.stderr
     if result.returncode != 0:
-        print("ERROR: Not authenticated with GitHub CLI.")
-        print()
-        print("  Run: gh auth login")
-        print("  Then re-run this command.")
+        print_error("Not authenticated with GitHub CLI.")
+        print_info( "\n"
+                    "  Run: gh auth login\n"
+                    "  Then re-run this command."
+        )
         sys.exit(1)
     return output
 

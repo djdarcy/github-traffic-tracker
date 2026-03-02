@@ -156,8 +156,8 @@ def main(argv=None):
     channels = [s for s in (global_args.show or []) if s is not None]
     from ghtraf.channels import configure_gtt_channels
     from ghtraf.lib.log_lib import init_output
-    configure_gtt_channels()
-    init_output(verbosity=verbosity, channels=channels)
+    channel_fds = configure_gtt_channels()
+    init_output(verbosity=verbosity, channels=channels, channel_fds=channel_fds)
     import ghtraf.hints  # noqa: F401 — register GTT hints
 
     # Pass 2: parse subcommand + shared/specific args

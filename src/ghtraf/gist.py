@@ -7,7 +7,7 @@ that back the traffic tracking system.
 import json
 
 from ghtraf.gh import run_gh
-from ghtraf.output import print_dry, print_ok
+from ghtraf.output import print_dry, print_info, print_ok
 
 
 # ---------------------------------------------------------------------------
@@ -72,9 +72,9 @@ def create_badge_gist(config, dry_run=False):
     description = f"[GTT] {config['gh_repo']} \u00b7 badges"
 
     if dry_run:
-        print_dry(f"Would create PUBLIC gist: \"{description}\"")
+        print_dry(     f"Would create PUBLIC gist: \"{description}\"")
         for name in files:
-            print(f"    - {name}")
+            print_info(f"    - {name}")
         return "<DRY_RUN_BADGE_GIST_ID>"
 
     payload = json.dumps({
@@ -83,14 +83,14 @@ def create_badge_gist(config, dry_run=False):
         "files": {name: {"content": content} for name, content in files.items()},
     })
 
-    print("  Creating gist with 5 files...")
+    print_info("  Creating gist with 5 files...")
     result = run_gh(["api", "gists", "--method", "POST", "--input", "-"],
                     input_data=payload)
     gist_data = json.loads(result)
     gist_id = gist_data["id"]
     gist_url = gist_data["html_url"]
     print_ok(f"Badge gist created: {gist_id}")
-    print(f"       {gist_url}")
+    print_info(f"       {gist_url}")
     return gist_id
 
 
@@ -113,8 +113,8 @@ def create_archive_gist(config, dry_run=False):
     description = f"[GTT] {config['gh_repo']} \u00b7 archive"
 
     if dry_run:
-        print_dry(f"Would create UNLISTED gist: \"{description}\"")
-        print("    - archive.json")
+        print_dry( f"Would create UNLISTED gist: \"{description}\"")
+        print_info("    - archive.json")
         return "<DRY_RUN_ARCHIVE_GIST_ID>"
 
     payload = json.dumps({
@@ -123,7 +123,7 @@ def create_archive_gist(config, dry_run=False):
         "files": {"archive.json": {"content": archive_content}},
     })
 
-    print("  Creating unlisted gist...")
+    print_info("  Creating unlisted gist...")
     result = run_gh(["api", "gists", "--method", "POST", "--input", "-"],
                     input_data=payload)
     gist_data = json.loads(result)

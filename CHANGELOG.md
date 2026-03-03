@@ -5,6 +5,35 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3-alpha] - 2026-03-02
+
+Plan-execute infrastructure — core_lib and plan_lib as DazzleLib candidates.
+
+### Added
+- **core_lib** (`src/ghtraf/lib/core_lib/`, 3 files) — Types-only library with
+  zero internal dependencies. Action (string IDs, `"category:operation:target"`),
+  ActionResult, Plan (with validate/query methods), ConflictResolution (7 modes),
+  FileCategory (4 categories), ErrorPolicy type alias. PlanRenderer as
+  `typing.Protocol` (@runtime_checkable) for structural subtyping.
+- **plan_lib** (`src/ghtraf/lib/plan_lib/`, 4 files) — Execution library:
+  `execute_plan()` with Kahn's algorithm for topological sort of depends_on
+  relationships, configurable error policy (fail_fast, skip_deps, continue),
+  dry-run mode. DefaultTextRenderer with ANSI color codes and OutputManager
+  DI (falls back to print). `file_ops.py` bridges dazzle_filekit for hash-based
+  file comparison via FileComparison and scan_destination(), with stdlib fallback.
+- 33 core_lib tests (`test_core_lib.py`) — Action identity, Plan validation,
+  query methods, enum completeness, Protocol compliance
+- 42 plan_lib tests (`test_plan_lib.py`) — execute_plan with all 3 error
+  policies, dependency DAG, dry-run, exception handling, renderer output,
+  file_ops with real filesystem
+- 8 end-to-end composability tests (`test_plan_lib_composability.py`) —
+  fresh install, force overwrite, skip existing, dry-run, API with dependency
+  failure propagation, serialization round-trip
+
+### Changed
+- Version bump 0.3.2 → 0.3.3
+- Test count: 227 → 303 (+76 in 2 files, +8 in one-offs)
+
 ## [0.3.2-alpha] - 2026-03-02
 
 Unify output system — channel-owned FDs, graduated quiet axis, block text.

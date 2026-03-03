@@ -65,8 +65,8 @@ The `executor_fn: Callable[[Action], ActionResult]` pattern keeps plan_lib
 domain-agnostic. Commands provide closures over their domain libraries:
 
 ```python
-# ghtraf init: executor wraps preserve_lib
-executor = make_init_executor(preserve_lib)
+# ghtraf create --files-only: executor wraps preserve_lib
+executor = make_files_executor(preserve_lib)
 results = execute_plan(plan, executor)
 
 # ghtraf create: executor wraps gh.py API calls

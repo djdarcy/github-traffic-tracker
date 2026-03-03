@@ -97,28 +97,32 @@ Channel spec syntax: `CHANNEL[:LEVEL]`. When LEVEL is omitted, the channel is sh
 
 ## Commands
 
-### `ghtraf init`
+### `ghtraf create`
 
-Copy workflow and dashboard template files into a target repository.
+Bootstrap a repository for traffic tracking. By default creates gists and
+configures repository variables. Use `--files-only` to deploy template files
+without cloud setup — useful for deploying templates to multiple repos or
+re-deploying after an upgrade.
+
+#### Template Deployment (`--files-only`)
 
 ```bash
-ghtraf init                                 # Copy templates to cwd (prompts on existing)
-ghtraf init --repo-dir /path/to/repo        # Specify target directory
-ghtraf init --force                         # Overwrite existing files without prompting
-ghtraf init --skip-existing                 # Only copy files that don't exist yet
-ghtraf init --dry-run                       # Preview what would be copied
+ghtraf create --files-only                          # Copy templates to cwd (prompts on existing)
+ghtraf create --files-only --repo-dir /path/to/repo # Specify target directory
+ghtraf create --files-only --force                  # Overwrite existing files
+ghtraf create --files-only --skip-existing          # Only copy files that don't exist yet
+ghtraf create --files-only --dry-run                # Preview what would be copied
 ```
-
-#### Init Options
 
 | Flag | Description |
 |------|-------------|
+| `--files-only` | Deploy template files without cloud setup |
 | `--force` | Overwrite existing files without prompting |
 | `--skip-existing` | Skip files that already exist (only copy new ones) |
 
-`--force` and `--skip-existing` are mutually exclusive. Without either, init prompts per file: `[y/N/a(ll)]`.
+`--force` and `--skip-existing` are mutually exclusive. Without either, prompts per file: `[y/N/a(ll)]`.
 
-#### What it copies
+**What it copies:**
 
 ```
 src/ghtraf/templates/          →  {target-repo}/
@@ -130,37 +134,13 @@ src/ghtraf/templates/          →  {target-repo}/
     └── favicon.svg                └── favicon.svg
 ```
 
-#### Repo discovery
-
-If `--repo-dir` is not specified, init discovers the target directory by:
+**Repo discovery** — if `--repo-dir` is not specified, discovers the target by:
 
 1. Walking up from cwd looking for `.ghtraf.json`
 2. Walking up from cwd looking for `.git`
 3. Falling back to the current working directory
 
-#### Init Examples
-
-```bash
-# Set up a new repo from scratch
-ghtraf init --repo-dir /path/to/my-repo
-ghtraf create --owner djdarcy --repo my-repo --configure
-
-# Preview what would be copied
-ghtraf init --dry-run --repo-dir /path/to/my-repo
-
-# Re-initialize, keeping customized files
-ghtraf init --skip-existing --repo-dir /path/to/my-repo
-
-# Force-overwrite all templates (e.g., after a GTT upgrade)
-ghtraf init --force --repo-dir /path/to/my-repo
-
-# See setup channel diagnostics
-ghtraf -v init --repo-dir /path/to/my-repo
-```
-
-### `ghtraf create`
-
-Create gists and configure a repository for traffic tracking.
+#### Cloud Setup (default)
 
 ```bash
 ghtraf create --owner YOUR_ORG --repo YOUR_REPO

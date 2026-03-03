@@ -31,11 +31,12 @@ Extract into reusable project with CLI tooling.
 - [x] `ghtraf` CLI package with `ghtraf create` subcommand ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
 - [x] 93-test pytest harness ([#19](https://github.com/djdarcy/github-traffic-tracker/issues/19))
 - [x] Delta-based accumulation (fixes first-run seeding bug)
-- [ ] `ghtraf init`, `status`, `list` subcommands
+- [x] `ghtraf create --files-only` (template deployment, formerly `ghtraf init`)
+- [ ] `ghtraf status`, `list` subcommands
 - [ ] `ghtraf upgrade` — migration runner ([#6](https://github.com/djdarcy/github-traffic-tracker/issues/6))
-- [ ] THAC0 verbosity system ([#13](https://github.com/djdarcy/github-traffic-tracker/issues/13))
+- [x] THAC0 verbosity system ([#13](https://github.com/djdarcy/github-traffic-tracker/issues/13))
 - [ ] CI pipeline for automated test runs ([#22](https://github.com/djdarcy/github-traffic-tracker/issues/22))
-- [ ] PyPI publish
+- [x] PyPI publish
 
 ## Phase 3: Dashboard & Analytics
 

@@ -1,12 +1,15 @@
-"""Tests for ghtraf.commands.init — the init subcommand.
+"""Tests for ghtraf create --files-only (template deployment).
 
 Tests use tmp_path fixtures to avoid touching real filesystems.
 Template access is via importlib.resources (the real package templates),
 validating that package data is configured correctly.
 
-The TestInitRealRepo class uses a snapshot of Way-of-Scarcity/papers
-(see tests/test-data/repos/papers/SOURCE.md) to verify init works
-against a real repository layout.
+The TestFilesOnlyRealRepo class uses a snapshot of Way-of-Scarcity/papers
+(see tests/test-data/repos/papers/SOURCE.md) to verify template deployment
+works against a real repository layout.
+
+Note: This functionality was originally in 'ghtraf init' and was merged
+into 'ghtraf create --files-only' as part of the command restructure.
 """
 
 from pathlib import Path
@@ -15,7 +18,7 @@ from unittest.mock import patch
 import pytest
 
 from ghtraf.cli import main
-from ghtraf.commands.init import (
+from ghtraf.commands.create import (
     _discover_repo_dir, TEMPLATE_FILES,
 )
 from ghtraf.lib.log_lib import manager as _manager_mod
@@ -33,12 +36,12 @@ def _reset_manager():
 # Template copying
 # ---------------------------------------------------------------------------
 class TestInitCopiesTemplates:
-    """ghtraf init copies all 4 template files."""
+    """ghtraf create --files-only copies all 4 template files."""
 
     def test_init_copies_all_templates(self, tmp_path):
         """All 4 template files should be copied to the target dir."""
         result = main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(tmp_path),
             "--non-interactive",
         ])
@@ -48,9 +51,9 @@ class TestInitCopiesTemplates:
             assert dest.exists(), f"Missing: {rel}"
 
     def test_init_creates_parent_dirs(self, tmp_path):
-        """init should create .github/workflows/ and docs/stats/."""
+        """create --files-only should create .github/workflows/ and docs/stats/."""
         result = main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(tmp_path),
             "--non-interactive",
         ])
@@ -60,7 +63,7 @@ class TestInitCopiesTemplates:
 
     def test_copied_files_are_not_empty(self, tmp_path):
         """Copied files should have real content, not be empty."""
-        main(["init", "--repo-dir", str(tmp_path), "--non-interactive"])
+        main(["create", "--files-only", "--repo-dir", str(tmp_path), "--non-interactive"])
         for rel in TEMPLATE_FILES:
             content = (tmp_path / rel).read_text(encoding="utf-8")
             assert len(content) > 10, f"{rel} appears empty"
@@ -75,7 +78,7 @@ class TestInitDryRun:
     def test_dry_run_no_files_written(self, tmp_path):
         """No files should exist after --dry-run."""
         result = main([
-            "init",
+            "create", "--files-only",
             "--dry-run",
             "--repo-dir", str(tmp_path),
         ])
@@ -85,7 +88,7 @@ class TestInitDryRun:
 
     def test_dry_run_shows_preview(self, tmp_path, capsys):
         """--dry-run output should mention what would be copied."""
-        main(["init", "--dry-run", "--repo-dir", str(tmp_path)])
+        main(["create", "--files-only", "--dry-run", "--repo-dir", str(tmp_path)])
         captured = capsys.readouterr()
         assert "DRY RUN" in captured.out
         assert "Would copy" in captured.out
@@ -105,7 +108,7 @@ class TestInitSkipExisting:
         sentinel.write_text("ORIGINAL CONTENT", encoding="utf-8")
 
         result = main([
-            "init",
+            "create", "--files-only",
             "--skip-existing",
             "--repo-dir", str(tmp_path),
             "--non-interactive",
@@ -120,7 +123,7 @@ class TestInitSkipExisting:
         (wf_dir / "traffic-badges.yml").write_text("EXISTING", encoding="utf-8")
 
         main([
-            "init", "--skip-existing",
+            "create", "--files-only", "--skip-existing",
             "--repo-dir", str(tmp_path), "--non-interactive",
         ])
 
@@ -135,7 +138,7 @@ class TestInitSkipExisting:
         (wf_dir / "traffic-badges.yml").write_text("EXISTING", encoding="utf-8")
 
         main([
-            "init", "--skip-existing",
+            "create", "--files-only", "--skip-existing",
             "--repo-dir", str(tmp_path), "--non-interactive",
         ])
         captured = capsys.readouterr()
@@ -156,7 +159,7 @@ class TestInitForce:
         sentinel.write_text("OLD CONTENT", encoding="utf-8")
 
         main([
-            "init", "--force",
+            "create", "--files-only", "--force",
             "--repo-dir", str(tmp_path), "--non-interactive",
         ])
 
@@ -179,7 +182,7 @@ class TestInitDefaultPrompts:
         sentinel.write_text("EXISTING", encoding="utf-8")
 
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(tmp_path),
             "--non-interactive",
         ])
@@ -206,7 +209,7 @@ class TestInitRepoDiscovery:
         (tmp_path / ".ghtraf.json").write_text('{"owner":"x"}', encoding="utf-8")
 
         args = argparse.Namespace(repo_dir=None)
-        with patch("ghtraf.commands.init.find_project_config") as mock_find:
+        with patch("ghtraf.commands.create.find_project_config") as mock_find:
             mock_find.return_value = tmp_path / ".ghtraf.json"
             result = _discover_repo_dir(args)
         assert result == tmp_path
@@ -217,7 +220,7 @@ class TestInitRepoDiscovery:
         (tmp_path / ".git").mkdir()
 
         args = argparse.Namespace(repo_dir=None, non_interactive=False)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=tmp_path):
                 result = _discover_repo_dir(args)
         assert result == tmp_path
@@ -232,7 +235,7 @@ class TestInitRepoDiscovery:
         child.mkdir()
 
         args = argparse.Namespace(repo_dir=None, non_interactive=False)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=child):
                 with patch("builtins.input", return_value="y"):
                     result = _discover_repo_dir(args)
@@ -248,7 +251,7 @@ class TestInitRepoDiscovery:
         child.mkdir()
 
         args = argparse.Namespace(repo_dir=None, non_interactive=False)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=child):
                 with patch("builtins.input", return_value="n"):
                     result = _discover_repo_dir(args)
@@ -264,7 +267,7 @@ class TestInitRepoDiscovery:
         child.mkdir()
 
         args = argparse.Namespace(repo_dir=None, non_interactive=True)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=child):
                 result = _discover_repo_dir(args)
         assert result == parent
@@ -278,7 +281,7 @@ class TestInitRepoDiscovery:
         (tmp_path / ".git").mkdir()
 
         args = argparse.Namespace(repo_dir=None, non_interactive=False)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=tmp_path):
                 # If input() were called, it would raise (no mock)
                 result = _discover_repo_dir(args)
@@ -293,7 +296,7 @@ class TestInitRepoDiscovery:
         """
         import argparse
         args = argparse.Namespace(repo_dir=None, non_interactive=True)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=tmp_path):
                 result = _discover_repo_dir(args)
         # Should return a valid resolved path (either from .git walk-up or cwd)
@@ -307,19 +310,19 @@ class TestInitRepoDiscovery:
 class TestInitRealRepo:
     """Integration tests using a snapshot of a real GitHub repository.
 
-    These tests verify ghtraf init works against a real repo layout,
-    not just empty tmp_path directories. The fixture is a committed
-    snapshot of Way-of-Scarcity/papers (README.md only, no PDFs).
+    These tests verify create --files-only works against a real repo
+    layout, not just empty tmp_path directories. The fixture is a
+    committed snapshot of Way-of-Scarcity/papers (README.md only, no PDFs).
 
     Source: https://github.com/Way-of-Scarcity/papers
     """
 
     def test_init_creates_github_dir(self, papers_repo):
-        """Init should create .github/workflows/ in a repo without one."""
+        """--files-only should create .github/workflows/ in a repo without one."""
         assert not (papers_repo / ".github").exists()
 
         result = main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -328,11 +331,11 @@ class TestInitRealRepo:
         assert (papers_repo / ".github" / "workflows" / "traffic-badges.yml").is_file()
 
     def test_init_creates_docs_stats(self, papers_repo):
-        """Init should create docs/stats/ in a repo without one."""
+        """--files-only should create docs/stats/ in a repo without one."""
         assert not (papers_repo / "docs").exists()
 
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -341,11 +344,11 @@ class TestInitRealRepo:
         assert (papers_repo / "docs" / "stats" / "favicon.svg").is_file()
 
     def test_original_files_untouched(self, papers_repo):
-        """Init should not modify existing repo files."""
+        """--files-only should not modify existing repo files."""
         readme_before = (papers_repo / "README.md").read_text(encoding="utf-8")
 
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -355,9 +358,9 @@ class TestInitRealRepo:
 
     def test_skip_existing_on_real_repo(self, papers_repo):
         """--skip-existing preserves user-modified files in a real repo."""
-        # First init to create all files
+        # First deploy to create all files
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -366,9 +369,9 @@ class TestInitRealRepo:
         wf = papers_repo / ".github" / "workflows" / "traffic-badges.yml"
         wf.write_text("# User customized workflow\n", encoding="utf-8")
 
-        # Second init with --skip-existing
+        # Second deploy with --skip-existing
         main([
-            "init", "--skip-existing",
+            "create", "--files-only", "--skip-existing",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -377,9 +380,9 @@ class TestInitRealRepo:
 
     def test_force_overwrites_on_real_repo(self, papers_repo):
         """--force replaces user-modified files in a real repo."""
-        # First init
+        # First deploy
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -390,7 +393,7 @@ class TestInitRealRepo:
 
         # Force overwrite
         main([
-            "init", "--force",
+            "create", "--files-only", "--force",
             "--repo-dir", str(papers_repo),
             "--non-interactive",
         ])
@@ -415,7 +418,7 @@ class TestInitLiveRepo:
     """
 
     def test_init_against_live_clone(self, live_papers_repo):
-        """Init deploys all templates into a live GitHub repo clone.
+        """--files-only deploys all templates into a live GitHub repo clone.
 
         Results are retained in tests/test-runs/papers-live/ for
         manual inspection — open in your file explorer to see how
@@ -428,7 +431,7 @@ class TestInitLiveRepo:
         assert not (live_papers_repo / "docs" / "stats").exists()
 
         result = main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(live_papers_repo),
             "--non-interactive",
         ])
@@ -450,7 +453,7 @@ class TestInitLiveRepo:
         import argparse
 
         args = argparse.Namespace(repo_dir=None)
-        with patch("ghtraf.commands.init.find_project_config", return_value=None):
+        with patch("ghtraf.commands.create.find_project_config", return_value=None):
             with patch("pathlib.Path.cwd", return_value=live_papers_repo):
                 result = _discover_repo_dir(args)
         assert result == live_papers_repo
@@ -458,7 +461,7 @@ class TestInitLiveRepo:
     def test_init_preserves_special_filenames(self, live_papers_repo):
         """Papers repo has filenames with spaces, brackets, ampersands.
 
-        Verify init doesn't corrupt or interfere with them.
+        Verify --files-only doesn't corrupt or interfere with them.
         """
         # Collect original filenames
         originals = set()
@@ -467,7 +470,7 @@ class TestInitLiveRepo:
                 originals.add(f.name)
 
         main([
-            "init",
+            "create", "--files-only",
             "--repo-dir", str(live_papers_repo),
             "--non-interactive",
         ])
@@ -497,7 +500,7 @@ class TestInitDeploy:
     """
 
     def test_full_pipeline_placeholder(self):
-        """Placeholder: init → create → configure → push → verify workflow."""
+        """Placeholder: create --files-only → create → push → verify workflow."""
         pytest.skip(
             "Deploy tests not yet implemented. "
             "See tests/test-data/repos/papers/SOURCE.md for the plan."

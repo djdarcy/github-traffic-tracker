@@ -82,10 +82,10 @@ def _discover_commands():
       register(subparsers, parents) — add itself to the subparser
       run(args, global_args) — execute the command
     """
-    from ghtraf.commands import create, init
+    from ghtraf.commands import create
     # Future commands added here:
     # from ghtraf.commands import status, list_cmd, upgrade, verify
-    return [create, init]
+    return [create]
 
 
 def _build_parser(commands, common_parser):

@@ -5,6 +5,29 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5-alpha] - 2026-03-03
+
+Merge `ghtraf init` into `ghtraf create --files-only` — single command for all setup.
+
+### Changed
+- **init → create merge** — All init functionality absorbed into `create.py`.
+  `ghtraf init` replaced by `ghtraf create --files-only`. Functions moved
+  verbatim (TEMPLATE_FILES, _discover_repo_dir, _get_template_root,
+  _prompt_overwrite, _run_deploy_templates). No behavioral change beyond
+  banner text.
+- `init.py` reduced to 14-line re-export shim for backward compatibility
+- `cli.py` only registers `create` (init removed from `_discover_commands()`)
+- `--files-only`, `--force`, `--skip-existing` flags added to create parser
+
+### Added
+- 5 new tests in `test_create.py`: dispatch isolation (no mock_gh needed),
+  dry-run via create parser, --force overwrite, cloud-path regression guard,
+  init subcommand rejection
+- Test count: 346 → 351 (+5 new)
+
+### Removed
+- `ghtraf init` subcommand (replaced by `ghtraf create --files-only`)
+
 ## [0.3.4-alpha] - 2026-03-03
 
 Finish #59 output overrides, integrate preserve_lib as executor backend.

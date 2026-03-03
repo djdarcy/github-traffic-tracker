@@ -7,14 +7,14 @@
 ## Purpose
 
 This is a minimal snapshot of a real GitHub repository used for integration
-testing of `ghtraf init`. Only the README.md is included — the original repo
+testing of `ghtraf create --files-only`. Only the README.md is included — the original repo
 contains ~13 MB of PDFs that are irrelevant to template deployment testing.
 
 ## What this tests
 
-- `ghtraf init` correctly creates `.github/workflows/` and `docs/stats/` in a
+- `ghtraf create --files-only` correctly creates `.github/workflows/` and `docs/stats/` in a
   repo that doesn't have them
-- Original repo files (README.md) are untouched after init
+- Original repo files (README.md) are untouched after template deployment
 - Template files have real content after deployment
 - Overwrite flags (--force, --skip-existing) work against a real repo layout
 
@@ -37,7 +37,7 @@ For live clone tests (network required), use:
 pytest -m integration
 ```
 
-These tests clone the real repo and run the full init pipeline against it.
+These tests clone the real repo and run the full template deployment pipeline against it.
 They are not run by default.
 
 ## Future: deploy testing

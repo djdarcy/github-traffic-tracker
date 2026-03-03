@@ -173,22 +173,25 @@ class TestMainEntryPoint:
         assert "--configure" in captured.out
         assert "--skip-variables" in captured.out
 
-    def test_init_help(self, capsys):
-        """'ghtraf init --help' should show init-specific args."""
+    def test_create_shows_files_only_flags(self, capsys):
+        """'ghtraf create --help' should show --files-only and template flags."""
         with pytest.raises(SystemExit) as exc_info:
-            main(["init", "--help"])
+            main(["create", "--help"])
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
+        assert "--files-only" in captured.out
         assert "--force" in captured.out
         assert "--skip-existing" in captured.out
 
-    def test_init_in_help_listing(self, capsys):
-        """'ghtraf --help' should list the init command."""
+    def test_init_not_in_help_listing(self, capsys):
+        """'ghtraf --help' should NOT list 'init' (merged into create)."""
         with pytest.raises(SystemExit) as exc_info:
             main(["--help"])
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
-        assert "init" in captured.out
+        # 'init' should not appear as a subcommand
+        # (it may appear in description text like "ghtraf init" references)
+        assert "create" in captured.out
 
     def test_unknown_subcommand_fails(self):
         """Unknown subcommand should exit non-zero."""
@@ -299,12 +302,13 @@ class TestEntryPoints:
         assert "--configure" in result.stdout
         assert "--skip-variables" in result.stdout
 
-    def test_ghtraf_init_help(self):
-        """'ghtraf init --help' should show init-specific flags."""
+    def test_ghtraf_create_files_only_help(self):
+        """'ghtraf create --help' should show template deployment flags."""
         result = subprocess.run(
-            ["ghtraf", "init", "--help"],
+            ["ghtraf", "create", "--help"],
             capture_output=True, text=True, timeout=10,
         )
         assert result.returncode == 0
+        assert "--files-only" in result.stdout
         assert "--force" in result.stdout
         assert "--skip-existing" in result.stdout

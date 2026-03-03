@@ -3,6 +3,9 @@
 These tests use the mock_gh fixture from conftest.py to avoid
 real GitHub API calls. They exercise the full command flow
 via ghtraf.cli.main().
+
+Includes tests for the --files-only dispatch (merged from 'ghtraf init')
+and for verifying that init is no longer a recognized subcommand.
 """
 
 from datetime import date
@@ -10,6 +13,7 @@ from datetime import date
 import pytest
 
 from ghtraf.cli import main
+from ghtraf.commands.create import TEMPLATE_FILES
 
 
 class TestCreateDryRun:
@@ -221,3 +225,86 @@ class TestCreateSkipVariables:
         assert "badge gist" in captured.out.lower()
         # No actual variable-setting calls should have been made
         assert len(mock_gh["variables_set"]) == 0
+
+
+class TestFilesOnlyDispatch:
+    """Test that --files-only dispatches to template deployment, not cloud setup."""
+
+    def test_files_only_skips_cloud_setup(self, tmp_path, capsys):
+        """--files-only should deploy templates without any gh API calls.
+
+        No mock_gh fixture needed — if cloud code ran, it would fail
+        because gh functions aren't mocked. The test passing proves
+        the dispatch works correctly.
+        """
+        result = main([
+            "create", "--files-only",
+            "--repo-dir", str(tmp_path),
+            "--non-interactive",
+        ])
+        assert result == 0
+        # Templates should exist
+        for rel in TEMPLATE_FILES:
+            assert (tmp_path / rel).exists(), f"Missing: {rel}"
+        # Cloud setup output should NOT appear
+        captured = capsys.readouterr()
+        assert "badge gist" not in captured.out.lower()
+        assert "repository variables" not in captured.out.lower()
+
+    def test_files_only_dry_run(self, tmp_path, capsys):
+        """--files-only --dry-run should preview without writing."""
+        result = main([
+            "create", "--files-only",
+            "--dry-run",
+            "--repo-dir", str(tmp_path),
+        ])
+        assert result == 0
+        captured = capsys.readouterr()
+        assert "DRY RUN" in captured.out
+        assert "Would copy" in captured.out
+        # No files should be written
+        for rel in TEMPLATE_FILES:
+            assert not (tmp_path / rel).exists()
+
+    def test_files_only_with_force(self, tmp_path):
+        """--files-only --force should overwrite existing files."""
+        # Pre-create a file with sentinel content
+        wf_dir = tmp_path / ".github" / "workflows"
+        wf_dir.mkdir(parents=True)
+        sentinel = wf_dir / "traffic-badges.yml"
+        sentinel.write_text("OLD CONTENT", encoding="utf-8")
+
+        result = main([
+            "create", "--files-only", "--force",
+            "--repo-dir", str(tmp_path),
+            "--non-interactive",
+        ])
+        assert result == 0
+        content = sentinel.read_text(encoding="utf-8")
+        assert content != "OLD CONTENT"
+        assert len(content) > 50  # real template content
+
+    def test_cloud_setup_still_works_without_files_only(self, mock_gh, capsys):
+        """Without --files-only, create should still do cloud setup."""
+        result = main([
+            "create",
+            "--dry-run",
+            "--non-interactive",
+            "--owner", "testorg",
+            "--repo", "testrepo",
+            "--created", "2026-01-01",
+        ])
+        assert result == 0
+        captured = capsys.readouterr()
+        # Cloud setup output SHOULD appear
+        assert "badge gist" in captured.out.lower()
+
+
+class TestInitSubcommandRemoved:
+    """Verify 'init' is no longer a recognized subcommand."""
+
+    def test_init_subcommand_rejected(self):
+        """'ghtraf init' should fail — init was merged into create."""
+        with pytest.raises(SystemExit) as exc_info:
+            main(["init", "--repo-dir", "/tmp/test"])
+        assert exc_info.value.code != 0

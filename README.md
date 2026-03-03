@@ -47,9 +47,11 @@ A GitHub Actions workflow runs daily at 3am UTC, fetching clone, view, download,
 
 ```bash
 pip install github-traffic-tracker
-ghtraf init --repo-dir /path/to/your/repo    # Copy workflow + dashboard templates
-ghtraf create --owner YOUR_ORG --repo YOUR_REPO --configure
+ghtraf create --owner YOUR_ORG --repo YOUR_REPO --configure --repo-dir /path/to/your/repo
 ```
+
+To redeploy templates without cloud setup (e.g., after upgrading ghtraf), use `ghtraf create --files-only`.
+See [docs/parameters.md](docs/parameters.md) for all options.
 
 ### Option B: Standalone script
 
@@ -126,7 +128,7 @@ GTT is in **early alpha** (v0.3.x). The core workflow and dashboard are function
 - `setup-gists.py` onboarding script
 - `pip install github-traffic-tracker` / `pip install ghtraf`
 - Structured verbosity (`-v`/`-Q`/`--show`) with 8 named output channels
-- `ghtraf init` — copy workflow + dashboard templates into your repo
+- `ghtraf create --files-only` — copy workflow + dashboard templates into your repo
 
 **In progress:**
 

@@ -4,16 +4,26 @@ These tests use the mock_gh fixture from conftest.py to avoid
 real GitHub API calls. They exercise the full command flow
 via ghtraf.cli.main().
 
-Includes tests for the --files-only dispatch (merged from 'ghtraf init')
+Includes tests for the --files-only dispatch (merged from 'ghtraf init'),
+plan-level unit tests for PEV (plan_files, make_files_executor),
 and for verifying that init is no longer a recognized subcommand.
 """
 
+import shutil
 from datetime import date
+from importlib.resources import as_file
+from pathlib import Path
 
 import pytest
 
 from ghtraf.cli import main
-from ghtraf.commands.create import TEMPLATE_FILES
+from ghtraf.commands.create import (
+    TEMPLATE_FILES, make_files_executor, plan_files, _get_template_root,
+)
+from ghtraf.lib.core_lib.types import (
+    Action, ActionResult, ConflictResolution, FileCategory, Plan,
+)
+from ghtraf.lib.plan_lib.executor import execute_plan
 
 
 class TestCreateDryRun:
@@ -298,6 +308,379 @@ class TestFilesOnlyDispatch:
         captured = capsys.readouterr()
         # Cloud setup output SHOULD appear
         assert "badge gist" in captured.out.lower()
+
+
+# ---------------------------------------------------------------------------
+# Plan-level unit tests (PEV infrastructure)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def template_src(tmp_path):
+    """Provide resolved template source directory with real package templates."""
+    template_root = _get_template_root()
+    with as_file(template_root) as src_root:
+        # Copy to a stable temp dir so the context manager doesn't matter
+        stable = tmp_path / "_templates"
+        shutil.copytree(src_root, stable)
+        yield stable
+
+
+class TestPlanFiles:
+    """Unit tests for plan_files() — plan construction only, no execution."""
+
+    def test_fresh_install_all_copy(self, tmp_path, template_src):
+        """Empty destination → all SOURCE_ONLY → all file:copy:* actions."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        plan = plan_files(dest, template_src)
+
+        assert len(plan.actions) == len(TEMPLATE_FILES)
+        for action in plan.actions:
+            assert action.id.startswith("file:copy:")
+            assert action.operation == "copy"
+            assert action.category == "file"
+
+    def test_all_identical_all_skip(self, tmp_path, template_src):
+        """Identical files → all file:skip:* actions."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        # Copy templates to dest first
+        for rel in TEMPLATE_FILES:
+            src = template_src / rel
+            dst = dest / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+
+        plan = plan_files(dest, template_src)
+
+        assert len(plan.actions) == len(TEMPLATE_FILES)
+        for action in plan.actions:
+            assert action.id.startswith("file:skip:")
+            assert action.operation == "skip"
+        assert not plan.has_changes()
+
+    def test_conflict_with_force(self, tmp_path, template_src):
+        """Conflicts + force → file:overwrite:* with OVERWRITE resolution."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        # Create conflicting files
+        for rel in TEMPLATE_FILES:
+            dst = dest / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text("DIFFERENT CONTENT")
+
+        plan = plan_files(dest, template_src, force=True)
+
+        for action in plan.actions:
+            assert action.id.startswith("file:overwrite:")
+            assert action.operation == "overwrite"
+            assert action.conflict == ConflictResolution.OVERWRITE
+
+    def test_conflict_with_skip_existing(self, tmp_path, template_src):
+        """Conflicts + skip_existing → file:skip:* with SKIP resolution."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        for rel in TEMPLATE_FILES:
+            dst = dest / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text("DIFFERENT CONTENT")
+
+        plan = plan_files(dest, template_src, skip_existing=True)
+
+        for action in plan.actions:
+            assert action.id.startswith("file:skip:")
+            assert action.operation == "skip"
+            assert action.conflict == ConflictResolution.SKIP
+
+    def test_conflict_interactive(self, tmp_path, template_src):
+        """Conflicts without flags → file:ask:* with ASK, requires_input."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        for rel in TEMPLATE_FILES:
+            dst = dest / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text("DIFFERENT CONTENT")
+
+        plan = plan_files(dest, template_src)
+
+        for action in plan.actions:
+            assert action.id.startswith("file:ask:")
+            assert action.conflict == ConflictResolution.ASK
+            assert action.requires_input is True
+
+    def test_conflict_non_interactive(self, tmp_path, template_src):
+        """Conflicts + non_interactive → file:skip:* (no prompt possible)."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        for rel in TEMPLATE_FILES:
+            dst = dest / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text("DIFFERENT CONTENT")
+
+        plan = plan_files(dest, template_src, non_interactive=True)
+
+        for action in plan.actions:
+            assert action.id.startswith("file:skip:")
+            assert action.operation == "skip"
+
+    def test_plan_validates(self, tmp_path, template_src):
+        """Plan from plan_files() always passes validate()."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        plan = plan_files(dest, template_src)
+        errors = plan.validate()
+        assert errors == []
+
+    def test_mixed_scenario(self, tmp_path, template_src):
+        """Mix of new, identical, and conflict files."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+
+        # Copy first template identically
+        first_rel = TEMPLATE_FILES[0]
+        src = template_src / first_rel
+        dst = dest / first_rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+
+        # Create conflict for second template
+        second_rel = TEMPLATE_FILES[1]
+        dst2 = dest / second_rel
+        dst2.parent.mkdir(parents=True, exist_ok=True)
+        dst2.write_text("CONFLICT CONTENT")
+
+        # Leave remaining templates as new (no dest file)
+
+        plan = plan_files(dest, template_src, force=True)
+
+        ops = {a.target: a.operation for a in plan.actions}
+        assert ops[str(first_rel)] == "skip"       # identical
+        assert ops[str(second_rel)] == "overwrite"  # conflict + force
+        # Remaining should be copy
+        for rel in TEMPLATE_FILES[2:]:
+            assert ops[str(rel)] == "copy"
+
+
+class TestFilesExecutor:
+    """Test make_files_executor() behavior."""
+
+    def test_copy_action(self, tmp_path, template_src):
+        """Executor copies file for copy action."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        executor = make_files_executor(template_src, dest)
+
+        action = Action(
+            id="file:copy:docs/stats/favicon.svg",
+            category="file", operation="copy",
+            target="docs/stats/favicon.svg",
+            description="New template file",
+        )
+        result = executor(action)
+
+        assert result.success is True
+        assert not result.skipped
+        assert (dest / "docs" / "stats" / "favicon.svg").exists()
+
+    def test_skip_action(self, tmp_path, template_src):
+        """Executor returns skipped result for skip action."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        executor = make_files_executor(template_src, dest)
+
+        action = Action(
+            id="file:skip:docs/stats/favicon.svg",
+            category="file", operation="skip",
+            target="docs/stats/favicon.svg",
+            description="Identical",
+        )
+        result = executor(action)
+
+        assert result.success is True
+        assert result.skipped is True
+        assert not (dest / "docs" / "stats" / "favicon.svg").exists()
+
+    def test_overwrite_action(self, tmp_path, template_src):
+        """Executor overwrites existing file for overwrite action."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        target = dest / "docs" / "stats" / "favicon.svg"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("OLD CONTENT")
+
+        executor = make_files_executor(template_src, dest)
+        action = Action(
+            id="file:overwrite:docs/stats/favicon.svg",
+            category="file", operation="overwrite",
+            target="docs/stats/favicon.svg",
+            description="Overwrite (--force)",
+            conflict=ConflictResolution.OVERWRITE,
+        )
+        result = executor(action)
+
+        assert result.success is True
+        assert not result.skipped
+        assert target.read_text() != "OLD CONTENT"
+
+    def test_ask_overwrite_yes(self, tmp_path, template_src, monkeypatch):
+        """ASK conflict + user says yes → file overwritten."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        target = dest / "docs" / "stats" / "favicon.svg"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("OLD CONTENT")
+
+        monkeypatch.setattr(
+            "ghtraf.commands.create._prompt_overwrite",
+            lambda *a, **kw: 'y',
+        )
+
+        executor = make_files_executor(template_src, dest)
+        action = Action(
+            id="file:ask:docs/stats/favicon.svg",
+            category="file", operation="overwrite",
+            target="docs/stats/favicon.svg",
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result = executor(action)
+
+        assert result.success is True
+        assert not result.skipped
+        assert target.read_text() != "OLD CONTENT"
+
+    def test_ask_overwrite_no(self, tmp_path, template_src, monkeypatch):
+        """ASK conflict + user says no → file skipped."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+        target = dest / "docs" / "stats" / "favicon.svg"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("OLD CONTENT")
+
+        monkeypatch.setattr(
+            "ghtraf.commands.create._prompt_overwrite",
+            lambda *a, **kw: 'n',
+        )
+
+        executor = make_files_executor(template_src, dest)
+        action = Action(
+            id="file:ask:docs/stats/favicon.svg",
+            category="file", operation="overwrite",
+            target="docs/stats/favicon.svg",
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result = executor(action)
+
+        assert result.success is True
+        assert result.skipped is True
+        assert target.read_text() == "OLD CONTENT"
+
+    def test_ask_overwrite_all(self, tmp_path, template_src, monkeypatch):
+        """ASK conflict + user says 'a' → all remaining overwritten."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+
+        # Create two conflicting files
+        for rel in TEMPLATE_FILES[:2]:
+            t = dest / rel
+            t.parent.mkdir(parents=True, exist_ok=True)
+            t.write_text("OLD CONTENT")
+
+        call_count = [0]
+
+        def fake_prompt(*a, **kw):
+            call_count[0] += 1
+            return 'a'  # overwrite all
+
+        monkeypatch.setattr(
+            "ghtraf.commands.create._prompt_overwrite", fake_prompt,
+        )
+
+        executor = make_files_executor(template_src, dest)
+
+        # First action with ASK
+        action1 = Action(
+            id=f"file:ask:{TEMPLATE_FILES[0]}",
+            category="file", operation="overwrite",
+            target=str(TEMPLATE_FILES[0]),
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result1 = executor(action1)
+        assert result1.success is True
+        assert not result1.skipped
+
+        # Second action — should NOT prompt (overwrite_all=True)
+        action2 = Action(
+            id=f"file:ask:{TEMPLATE_FILES[1]}",
+            category="file", operation="overwrite",
+            target=str(TEMPLATE_FILES[1]),
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result2 = executor(action2)
+        assert result2.success is True
+        assert not result2.skipped
+        # Prompt was only called once (for the first file)
+        assert call_count[0] == 1
+
+    def test_ask_skip_all(self, tmp_path, template_src, monkeypatch):
+        """ASK conflict + user says 's' → all remaining skipped without prompting."""
+        dest = tmp_path / "repo"
+        dest.mkdir()
+
+        # Create two conflicting files
+        for rel in TEMPLATE_FILES[:2]:
+            t = dest / rel
+            t.parent.mkdir(parents=True, exist_ok=True)
+            t.write_text("OLD CONTENT")
+
+        call_count = [0]
+
+        def fake_prompt(*a, **kw):
+            call_count[0] += 1
+            return 's'  # skip all
+
+        monkeypatch.setattr(
+            "ghtraf.commands.create._prompt_overwrite", fake_prompt,
+        )
+
+        executor = make_files_executor(template_src, dest)
+
+        # First action with ASK — user says 's'
+        action1 = Action(
+            id=f"file:ask:{TEMPLATE_FILES[0]}",
+            category="file", operation="overwrite",
+            target=str(TEMPLATE_FILES[0]),
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result1 = executor(action1)
+        assert result1.success is True
+        assert result1.skipped is True
+        assert (dest / TEMPLATE_FILES[0]).read_text() == "OLD CONTENT"
+
+        # Second action — should NOT prompt (skip_all=True)
+        action2 = Action(
+            id=f"file:ask:{TEMPLATE_FILES[1]}",
+            category="file", operation="overwrite",
+            target=str(TEMPLATE_FILES[1]),
+            description="File exists",
+            conflict=ConflictResolution.ASK,
+            requires_input=True,
+        )
+        result2 = executor(action2)
+        assert result2.success is True
+        assert result2.skipped is True
+        assert (dest / TEMPLATE_FILES[1]).read_text() == "OLD CONTENT"
+        # Prompt was only called once (for the first file)
+        assert call_count[0] == 1
 
 
 class TestInitSubcommandRemoved:

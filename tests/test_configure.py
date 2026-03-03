@@ -46,19 +46,6 @@ class TestApplyReplacements:
         assert count == 0
         assert f.read_text() == "nothing to match"  # unchanged
 
-    def test_dry_run_no_modification(self, tmp_path):
-        """Dry run should not modify the file."""
-        f = tmp_path / "test.txt"
-        original = "Hello PLACEHOLDER world"
-        f.write_text(original)
-        replacements = [
-            (r"PLACEHOLDER", "{name}", "name replacement"),
-        ]
-        count = apply_replacements(f, replacements, {"name": "ghtraf"},
-                                   dry_run=True)
-        assert count == 1  # still counts the match
-        assert f.read_text() == original  # file unchanged
-
     def test_missing_file_returns_zero(self, tmp_path):
         """Nonexistent file should warn and return 0."""
         count = apply_replacements(
@@ -103,18 +90,6 @@ class TestConfigureDashboard:
         assert "def456" in content
         assert "2026-06-15" in content
         assert count >= 5  # at least 5 successful replacements
-
-    def test_dry_run_preserves_file(self, sample_dashboard_html):
-        """Dry run should not modify the dashboard file."""
-        original = sample_dashboard_html.read_text()
-        config = {
-            "owner": "x", "repo": "y", "display_name_html": "Z",
-            "gh_username": "u", "badge_gist_id": "g",
-            "archive_gist_id": "a", "created": "2026-01-01",
-        }
-        configure_dashboard(config, sample_dashboard_html, dry_run=True)
-        assert sample_dashboard_html.read_text() == original
-
 
 class TestConfigureWorkflow:
     """Test workflow YAML configuration."""
@@ -176,16 +151,6 @@ class TestConfigureReadme:
         content = sample_dashboard_readme.read_text()
         assert "myorg.github.io" in content  # lowercase
         assert "MyOrg.github.io" not in content
-
-    def test_dry_run_preserves_file(self, sample_dashboard_readme):
-        """Dry run should not modify the README file."""
-        original = sample_dashboard_readme.read_text()
-        config = {
-            "owner": "x", "repo": "y", "display_name": "Z",
-            "gh_username": "u", "badge_gist_id": "g",
-        }
-        configure_readme(config, sample_dashboard_readme, dry_run=True)
-        assert sample_dashboard_readme.read_text() == original
 
     def test_missing_readme_file(self, tmp_path):
         """Should handle missing README file gracefully."""

@@ -8,17 +8,16 @@ import json
 import re
 from pathlib import Path
 
-from ghtraf.output import print_dry, print_info, print_ok, print_skip, print_warn
+from ghtraf.output import print_info, print_ok, print_skip, print_warn
 
 
-def apply_replacements(filepath, replacements, config, dry_run=False):
+def apply_replacements(filepath, replacements, config):
     """Apply a list of (pattern, template, description) replacements to a file.
 
     Args:
         filepath: Path to the file to modify.
         replacements: List of (regex_pattern, format_template, description) tuples.
         config: Dict of values to substitute into templates.
-        dry_run: If True, only print what would happen.
 
     Returns:
         Count of successful replacements.
@@ -38,27 +37,23 @@ def apply_replacements(filepath, replacements, config, dry_run=False):
         if count > 0:
             content = new_content
             success += 1
-            if dry_run:
-                print_dry(f"{desc}")
-            else:
-                print_ok(f"{desc}")
+            print_ok(f"{desc}")
         else:
             print_skip(f"{desc} (pattern not found)")
 
-    if not dry_run and content != original:
+    if content != original:
         filepath.write_text(content, encoding="utf-8")
 
     return success
 
 
-def configure_dashboard(config, dashboard_path, dry_run=False):
+def configure_dashboard(config, dashboard_path):
     """Update the dashboard HTML file with project-specific values.
 
     Args:
         config: Dict with owner, repo, display_name_html, gh_username,
                 badge_gist_id, archive_gist_id, created.
         dashboard_path: Path to docs/stats/index.html.
-        dry_run: If True, only print what would happen.
 
     Returns:
         Count of successful replacements.
@@ -109,17 +104,16 @@ def configure_dashboard(config, dashboard_path, dry_run=False):
          "Repo creation date"),
     ]
 
-    return apply_replacements(dashboard_path, replacements, config, dry_run)
+    return apply_replacements(dashboard_path, replacements, config)
 
 
-def configure_readme(config, readme_path, dry_run=False):
+def configure_readme(config, readme_path):
     """Update the dashboard README.md with project-specific values.
 
     Args:
         config: Dict with owner, repo, display_name, gh_username,
                 badge_gist_id.
         readme_path: Path to docs/stats/README.md.
-        dry_run: If True, only print what would happen.
 
     Returns:
         Count of successful replacements.
@@ -144,16 +138,15 @@ def configure_readme(config, readme_path, dry_run=False):
          "Dashboard URL"),
     ]
 
-    return apply_replacements(readme_path, replacements, config, dry_run)
+    return apply_replacements(readme_path, replacements, config)
 
 
-def configure_workflow(config, workflow_path, dry_run=False):
+def configure_workflow(config, workflow_path):
     """Update the traffic-badges.yml workflow.
 
     Args:
         config: Dict with optional 'ci_workflows' list.
         workflow_path: Path to .github/workflows/traffic-badges.yml.
-        dry_run: If True, only print what would happen.
 
     Returns:
         Count of changes made.
@@ -180,8 +173,7 @@ def configure_workflow(config, workflow_path, dry_run=False):
         if new_content != content:
             content = new_content
             changes += 1
-            msg = f"workflow_run trigger: {names}"
-            print_dry(msg) if dry_run else print_ok(msg)
+            print_ok(f"workflow_run trigger: {names}")
     else:
         new_content = re.sub(
             r'  workflow_run:.*?\n    workflows:.*?\n    types:.*?\n',
@@ -194,8 +186,7 @@ def configure_workflow(config, workflow_path, dry_run=False):
         if new_content != content:
             content = new_content
             changes += 1
-            msg = "workflow_run trigger: commented out (no CI workflows specified)"
-            print_dry(msg) if dry_run else print_ok(msg)
+            print_ok("workflow_run trigger: commented out (no CI workflows specified)")
 
     # Update archive version string
     new_content = re.sub(
@@ -206,10 +197,9 @@ def configure_workflow(config, workflow_path, dry_run=False):
     if new_content != content:
         content = new_content
         changes += 1
-        msg = "Archive version: 0.1.0"
-        print_dry(msg) if dry_run else print_ok(msg)
+        print_ok("Archive version: 0.1.0")
 
-    if not dry_run and content != original:
+    if content != original:
         workflow_path.write_text(content, encoding="utf-8")
 
     return changes

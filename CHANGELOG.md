@@ -5,6 +5,31 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6-alpha] - 2026-03-03
+
+PEV retrofit of files path — `--files-only` now uses plan-execute pattern end-to-end.
+
+### Changed
+- **Files path PEV** — `_run_deploy_templates()` replaced by plan-execute flow:
+  `plan_files()` builds a Plan via `scan_destination()`, `make_files_executor()`
+  handles copy/skip/overwrite/ask, `execute_plan()` runs it with topological sort.
+  `--dry-run` renders the plan without executing (PEV owns dry-run).
+- **configure.py dry_run removed** — `configure_dashboard()`, `configure_readme()`,
+  `configure_workflow()`, `apply_replacements()` no longer accept `dry_run` parameter.
+  PEV is the sole dry-run mechanism; domain functions always do real work.
+- **Overwrite prompt improved** — Added "skip all" option (`s`) alongside "all yes"
+  (`a`). Prompt now shows `(default: skip)` hint for clarity.
+
+### Added
+- `plan_files()` — builds Plan from `scan_destination()` file comparison results
+- `make_files_executor()` — executor closure with `overwrite_all`/`skip_all` state
+- 16 new tests: TestPlanFiles (8), TestFilesExecutor (7), template_src fixture
+- Test count: 351 → 363 (+15 new, -3 removed dry_run tests)
+
+### Removed
+- `src/ghtraf/commands/init.py` — 14-line re-export shim (no longer needed)
+- 3 `test_dry_run_preserves_file` tests from test_configure.py (dead code after PEV)
+
 ## [0.3.5-alpha] - 2026-03-03
 
 Merge `ghtraf init` into `ghtraf create --files-only` — single command for all setup.

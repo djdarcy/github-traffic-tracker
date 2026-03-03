@@ -20,7 +20,13 @@ from pathlib import Path
 
 from ghtraf import gh, gist, configure
 from ghtraf.config import find_project_config, register_repo_globally, save_project_config
+from ghtraf.lib.core_lib.types import (
+    Action, ActionResult, ConflictResolution, FileCategory, Plan,
+)
 from ghtraf.lib.log_lib import get_output
+from ghtraf.lib.plan_lib.executor import execute_plan
+from ghtraf.lib.plan_lib.file_ops import scan_destination
+from ghtraf.lib.plan_lib.renderer import DefaultTextRenderer
 from ghtraf.output import (
     print_banner, print_dry, print_error, print_info, print_ok,
     print_skip, print_step, print_warn, prompt,
@@ -156,26 +162,178 @@ def _get_template_root():
 def _prompt_overwrite(rel_path, non_interactive):
     """Prompt user about overwriting an existing file.
 
-    Returns: 'y' (overwrite this file), 'n' (skip), 'a' (overwrite all remaining).
+    Returns: 'y' (overwrite this), 'n' (skip this),
+             'a' (overwrite all remaining), 's' (skip all remaining).
     """
     if non_interactive:
         return 'n'  # skip in non-interactive mode
 
     while True:
         response = input(
-            f"  {rel_path} already exists. Overwrite? [y/N/a(ll)]: "
+            f"  {rel_path} already exists. Overwrite? "
+            "[y/N/a(ll yes)/s(kip all)] (default: skip): "
         ).strip().lower()
         if response in ('', 'n'):
             return 'n'
         if response == 'y':
             return 'y'
-        if response in ('a', 'all'):
+        if response in ('a', 'all yes'):
             return 'a'
-        print_info("  Please enter y, n, or a.")
+        if response in ('s', 'skip all'):
+            return 's'
+        print_info("  Please enter y, n, a, or s.")
 
 
-def _run_deploy_templates(args):
-    """Deploy template files to target repo (formerly 'ghtraf init')."""
+def plan_files(
+    repo_dir,
+    src_root,
+    *,
+    force=False,
+    skip_existing=False,
+    non_interactive=False,
+):
+    """Build a plan for deploying template files.
+
+    Uses scan_destination() to compare TEMPLATE_FILES against repo_dir,
+    then maps FileComparison results to Action objects.
+
+    Args:
+        repo_dir: Target directory to deploy templates into (Path).
+        src_root: Resolved real path inside as_file() context (Path).
+        force: Conflicts get ConflictResolution.OVERWRITE.
+        skip_existing: Conflicts get ConflictResolution.SKIP.
+        non_interactive: Conflicts without --force get SKIP (no prompt).
+
+    Returns:
+        Plan with command="create --files-only" and file actions.
+    """
+    # Build source_files mapping for scan_destination
+    source_files = {}
+    for rel_path in TEMPLATE_FILES:
+        src_file = src_root / rel_path
+        if src_file.is_file():
+            source_files[str(rel_path)] = str(src_file)
+
+    scan_result = scan_destination(source_files, repo_dir, quick=False)
+
+    actions = []
+    for comp in scan_result.comparisons:
+        rel = comp.rel_path
+
+        if comp.category == FileCategory.IDENTICAL:
+            actions.append(Action(
+                id=f"file:skip:{rel}",
+                category="file", operation="skip",
+                target=rel,
+                description="Identical to template",
+                details=comp.to_details(),
+            ))
+
+        elif comp.category == FileCategory.SOURCE_ONLY:
+            actions.append(Action(
+                id=f"file:copy:{rel}",
+                category="file", operation="copy",
+                target=rel,
+                description="New template file",
+                details=comp.to_details(),
+            ))
+
+        elif comp.category == FileCategory.CONFLICT:
+            if force:
+                actions.append(Action(
+                    id=f"file:overwrite:{rel}",
+                    category="file", operation="overwrite",
+                    target=rel,
+                    description="Overwrite (--force)",
+                    conflict=ConflictResolution.OVERWRITE,
+                    details=comp.to_details(),
+                ))
+            elif skip_existing or non_interactive:
+                actions.append(Action(
+                    id=f"file:skip:{rel}",
+                    category="file", operation="skip",
+                    target=rel,
+                    description="Kept existing (--skip-existing)",
+                    conflict=ConflictResolution.SKIP,
+                    details=comp.to_details(),
+                ))
+            else:
+                # Interactive: ask at execution time
+                actions.append(Action(
+                    id=f"file:ask:{rel}",
+                    category="file", operation="overwrite",
+                    target=rel,
+                    description="File exists \u2014 will prompt",
+                    conflict=ConflictResolution.ASK,
+                    requires_input=True,
+                    details=comp.to_details(),
+                ))
+
+    return Plan(command="create --files-only", actions=actions)
+
+
+def make_files_executor(template_root, repo_dir):
+    """Create an executor function for file deployment actions.
+
+    Must be called inside as_file() context so template_root is a real Path.
+
+    Handles: copy, overwrite, skip operations.
+    For conflict=ASK actions, prompts the user at execution time.
+    """
+    overwrite_all = False
+    skip_all = False
+
+    def files_executor(action):
+        nonlocal overwrite_all, skip_all
+
+        if action.operation == "skip":
+            return ActionResult(
+                action=action, success=True, skipped=True,
+                message=f"Skipped {action.target}",
+            )
+
+        src_file = template_root / action.target
+        dest_file = repo_dir / action.target
+
+        # Handle ASK conflict at execution time
+        if action.conflict == ConflictResolution.ASK:
+            if skip_all:
+                return ActionResult(
+                    action=action, success=True, skipped=True,
+                    message=f"Skipped {action.target} (skip all)",
+                )
+            if not overwrite_all:
+                choice = _prompt_overwrite(action.target, non_interactive=False)
+                if choice == 'n':
+                    return ActionResult(
+                        action=action, success=True, skipped=True,
+                        message=f"Skipped {action.target} (user chose not to overwrite)",
+                    )
+                elif choice == 'a':
+                    overwrite_all = True
+                    # Fall through to copy
+                elif choice == 's':
+                    skip_all = True
+                    return ActionResult(
+                        action=action, success=True, skipped=True,
+                        message=f"Skipped {action.target} (skip all)",
+                    )
+
+        # Perform the copy
+        dest_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src_file, dest_file)
+
+        verb = "Overwrote" if action.operation == "overwrite" else "Copied"
+        return ActionResult(
+            action=action, success=True,
+            message=f"{verb} {action.target}",
+        )
+
+    return files_executor
+
+
+def _run_files_only(args):
+    """Deploy template files using plan-execute pattern."""
     dry_run = args.dry_run
     force = getattr(args, 'force', False)
     skip_existing = getattr(args, 'skip_existing', False)
@@ -186,69 +344,50 @@ def _run_deploy_templates(args):
     repo_dir = _discover_repo_dir(args)
     out.emit(1, "  [setup] Target directory: {d}", channel='setup', d=repo_dir)
 
-    print_banner("\nghtraf create --files-only — Deploy template files\n" + "=" * 40)
+    print_banner("\nghtraf create --files-only \u2014 Deploy template files\n" + "=" * 40)
     if dry_run:
-        print_info("[DRY RUN MODE — no files will be written]")
+        print_info("[DRY RUN MODE \u2014 no files will be written]")
     print_info(f"  Target: {repo_dir}\n")
 
-    # Copy each template file
     template_root = _get_template_root()
-    overwrite_all = force
-    copied = 0
-    skipped = 0
 
     with as_file(template_root) as src_root:
-        for rel_path in TEMPLATE_FILES:
-            src_file = src_root / rel_path
-            dest_file = repo_dir / rel_path
+        # Build plan
+        plan = plan_files(
+            repo_dir, src_root,
+            force=force,
+            skip_existing=skip_existing,
+            non_interactive=non_interactive,
+        )
 
-            out.emit(2, "  [setup] Processing: {f}", channel='setup',
-                     f=str(rel_path))
+        # Render plan
+        renderer = DefaultTextRenderer()
+        renderer.render(plan, output_manager=out, stream=sys.stdout)
 
-            if not src_file.is_file():
-                print_warn(f"Template not found: {rel_path}")
-                continue
+        if not plan.has_changes():
+            print_info("\nAll template files are up to date.")
+            return 0
 
-            if dest_file.exists() and not overwrite_all:
-                if skip_existing:
-                    print_skip(f"{rel_path} (already exists)")
-                    skipped += 1
-                    continue
+        # Execute plan
+        executor = make_files_executor(src_root, repo_dir)
+        results = execute_plan(plan, executor, dry_run=dry_run)
 
-                if dry_run:
-                    print_dry(f"Would prompt: {rel_path} already exists")
-                    skipped += 1
-                    continue
-
-                choice = _prompt_overwrite(rel_path, non_interactive)
-                if choice == 'n':
-                    print_skip(f"{rel_path} (kept existing)")
-                    skipped += 1
-                    continue
-                elif choice == 'a':
-                    overwrite_all = True
-                    # Fall through to copy
-
-            # Copy the file
-            if dry_run:
-                print_dry(f"Would copy: {rel_path}")
-            else:
-                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src_file, dest_file)
-                print_ok(f"{rel_path}")
-                out.emit(2, "  [setup] Copied {src} -> {dst}",
-                         channel='setup', src=str(src_file),
-                         dst=str(dest_file))
-            copied += 1
-
-    # Summary
-    print_info("")
+    # Summary — in dry_run, execute_plan marks all as skipped, so count by operation
     if dry_run:
-        print_info(f"  Would copy {copied} file(s), skip {skipped} file(s).")
+        would_copy = sum(1 for r in results
+                         if r.action.operation in ("copy", "overwrite"))
+        would_skip = sum(1 for r in results if r.action.operation == "skip")
+        print_info("")
+        print_info(f"  Would copy {would_copy} file(s), skip {would_skip} file(s).")
     else:
+        copied = sum(1 for r in results if r.success and not r.skipped)
+        skipped = sum(1 for r in results if r.skipped)
+        print_info("")
         print_info(f"  Copied {copied} file(s), skipped {skipped} file(s).")
 
-    if copied > 0 and not dry_run:
+    if not dry_run and any(
+        r.success and not r.skipped for r in results
+    ):
         import ghtraf.hints  # noqa: F401
         out.hint('setup.configure', 'result')
         print_info("")
@@ -397,7 +536,7 @@ def run(args):
     """Execute the create command."""
     # Dispatch to template deployment if --files-only
     if getattr(args, 'files_only', False):
-        return _run_deploy_templates(args)
+        return _run_files_only(args)
 
     dry_run = args.dry_run
 
@@ -545,9 +684,10 @@ def run(args):
         readme_path = repo_dir / "docs" / "stats" / "README.md"
         workflow_path = repo_dir / ".github" / "workflows" / "traffic-badges.yml"
 
-        configure.configure_dashboard(config, dashboard_path, dry_run=dry_run)
-        configure.configure_readme(config, readme_path, dry_run=dry_run)
-        configure.configure_workflow(config, workflow_path, dry_run=dry_run)
+        if not dry_run:
+            configure.configure_dashboard(config, dashboard_path)
+            configure.configure_readme(config, readme_path)
+            configure.configure_workflow(config, workflow_path)
 
     # Write config files
     out.emit(1, "  [config] Writing project configuration...", channel='config')

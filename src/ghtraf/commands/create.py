@@ -199,6 +199,7 @@ def run(args):
     # Prerequisites
     import ghtraf.hints  # noqa: F401 — register domain hints
     out = get_output()
+    out.set_channel_fd('setup', sys.stdout)  # setup is user-facing in create
     print_info("\nChecking prerequisites...")
     out.emit(1, "  [setup] Checking gh CLI installation...", channel='setup')
     version = gh.check_gh_installed()

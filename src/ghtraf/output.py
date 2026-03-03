@@ -31,104 +31,113 @@ from ghtraf.lib.log_lib import (                     # noqa: F401
 # Print functions — route through emit()
 # ---------------------------------------------------------------------------
 
-def print_step(n, total, msg, *, file=None):
+def print_step(n, total, msg, *, level=-1, channel='general', file=None):
     """Print a formatted step header.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
+    Callers can override level= for different priority contexts.
     """
     try:
         out = get_output()
-        out.emit(-1, f"\n== Step {n}/{total}: {msg} ==",
-                 channel='general', file=file)
+        out.emit(level, f"\n== Step {n}/{total}: {msg} ==",
+                 channel=channel, file=file)
     except Exception:
         print(f"\n== Step {n}/{total}: {msg} ==", file=file or sys.stdout)
 
 
-def print_ok(msg, *, file=None):
+def print_ok(msg, *, level=-1, channel='general', file=None):
     """Print a success message.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
+    Callers can override level= (e.g., level=0 for per-file noise
+    suppressed at -Q, vs default -1 for summary messages).
     """
     try:
         out = get_output()
-        out.emit(-1, f"  [OK] {msg}", channel='general', file=file)
+        out.emit(level, f"  [OK] {msg}", channel=channel, file=file)
     except Exception:
         print(f"  [OK] {msg}", file=file or sys.stdout)
 
 
-def print_dry(msg, *, file=None):
+def print_dry(msg, *, level=-1, channel='general', file=None):
     """Print a dry-run message.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-1, f"  [DRY RUN] {msg}", channel='general', file=file)
+        out.emit(level, f"  [DRY RUN] {msg}", channel=channel, file=file)
     except Exception:
         print(f"  [DRY RUN] {msg}", file=file or sys.stdout)
 
 
-def print_warn(msg, *, file=None):
+def print_warn(msg, *, level=-2, channel='general', file=None):
     """Print a warning message.
 
     Level -2 (WARNING): hidden at -QQQ and below.
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-2, f"  [WARN] {msg}", channel='general', file=file)
+        out.emit(level, f"  [WARN] {msg}", channel=channel, file=file)
     except Exception:
         print(f"  [WARN] {msg}", file=file or sys.stdout)
 
 
-def print_skip(msg, *, file=None):
+def print_skip(msg, *, level=-1, channel='general', file=None):
     """Print a skip message.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-1, f"  [SKIP] {msg}", channel='general', file=file)
+        out.emit(level, f"  [SKIP] {msg}", channel=channel, file=file)
     except Exception:
         print(f"  [SKIP] {msg}", file=file or sys.stdout)
 
 
-def print_error(msg, *, file=None):
+def print_error(msg, *, level=-3, channel='error', file=None):
     """Print an error message.
 
     Level -3 (ERROR): shown at all verbosity levels except hard wall (-QQQQ).
     Routes through the 'error' channel (default: stderr).
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-3, f"  ERROR: {msg}", channel='error', file=file)
+        out.emit(level, f"  ERROR: {msg}", channel=channel, file=file)
     except Exception:
         print(f"  ERROR: {msg}", file=file or sys.stderr)
 
 
-def print_info(msg, *, file=None):
+def print_info(msg, *, level=-1, channel='general', file=None):
     """Print an informational message.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
     Use for status lines, summaries, and other user-facing text
     that was previously raw print().
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-1, msg, channel='general', file=file)
+        out.emit(level, msg, channel=channel, file=file)
     except Exception:
         print(msg, file=file or sys.stdout)
 
 
-def print_banner(msg, *, file=None):
+def print_banner(msg, *, level=-1, channel='general', file=None):
     """Print a banner/header message.
 
     Level -1 (MINIMAL): hidden at -QQ and below.
     Use for command headers, separators, and section titles
     that were previously raw print().
+    Callers can override level= and channel=.
     """
     try:
         out = get_output()
-        out.emit(-1, msg, channel='general', file=file)
+        out.emit(level, msg, channel=channel, file=file)
     except Exception:
         print(msg, file=file or sys.stdout)
 

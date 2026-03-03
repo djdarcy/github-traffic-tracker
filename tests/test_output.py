@@ -253,6 +253,116 @@ class TestChannelFDRouting:
 
 
 # ---------------------------------------------------------------------------
+# Level and channel override tests
+# ---------------------------------------------------------------------------
+class TestLevelChannelOverrides:
+    """print_*() functions accept level= and channel= keyword params."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_manager(self):
+        old = _manager_mod._manager
+        yield
+        _manager_mod._manager = old
+
+    def test_print_ok_level_override_suppresses_at_Q(self, capsys):
+        """print_ok(level=0) is suppressed at -Q, unlike default level=-1."""
+        init_output(verbosity=-1, channel_fds=GTT_FDS)
+        print_ok("per-file noise", level=0)
+        print_ok("summary stays")  # default level=-1, passes at -1
+        captured = capsys.readouterr()
+        assert "per-file noise" not in captured.out
+        assert "summary stays" in captured.out
+
+    def test_print_warn_level_override(self, capsys):
+        """print_warn(level=-1) becomes suppressible at -QQ instead of -QQQ."""
+        init_output(verbosity=-2, channel_fds=GTT_FDS)
+        print_warn("default warn")  # level=-2, passes at -2
+        print_warn("soft warn", level=-1)  # level=-1, hidden at -2
+        captured = capsys.readouterr()
+        assert "default warn" in captured.out
+        assert "soft warn" not in captured.out
+
+    def test_print_info_channel_override(self, capsys):
+        """print_info(channel='setup') routes to stderr (setup default)."""
+        init_output(verbosity=0, channel_fds=GTT_FDS)
+        print_info("user-facing")  # default channel='general' → stdout
+        print_info("diagnostic", channel='setup')  # setup → stderr
+        captured = capsys.readouterr()
+        assert "user-facing" in captured.out
+        assert "diagnostic" in captured.err
+
+    def test_print_ok_channel_override(self, capsys):
+        """print_ok(channel='setup') routes to stderr."""
+        init_output(verbosity=0, channel_fds=GTT_FDS)
+        print_ok("via setup", channel='setup')
+        captured = capsys.readouterr()
+        assert "[OK] via setup" in captured.err
+        assert captured.out == ""
+
+    def test_print_error_level_override(self, capsys):
+        """print_error(level=-1) becomes hidden at -QQ."""
+        init_output(verbosity=-2, channel_fds=GTT_FDS)
+        print_error("default error")  # level=-3, passes at -2
+        print_error("soft error", level=-1)  # level=-1, hidden at -2
+        captured = capsys.readouterr()
+        assert "default error" in captured.err
+        assert "soft error" not in captured.err
+
+    def test_level_and_channel_together(self, capsys):
+        """Both level= and channel= can be overridden simultaneously."""
+        init_output(verbosity=0, channel_fds=GTT_FDS)
+        buf = io.StringIO()
+        out = get_output()
+        out.set_channel_fd('setup', buf)
+        print_ok("setup ok", level=0, channel='setup')
+        assert "[OK] setup ok" in buf.getvalue()
+
+    def test_all_functions_accept_level_channel(self):
+        """Every print_*() function accepts level= and channel= kwargs."""
+        init_output(verbosity=0, channel_fds=GTT_FDS)
+        buf = io.StringIO()
+        # These should not raise TypeError
+        print_ok("x", level=-1, channel='general', file=buf)
+        print_warn("x", level=-2, channel='general', file=buf)
+        print_skip("x", level=-1, channel='general', file=buf)
+        print_dry("x", level=-1, channel='general', file=buf)
+        print_info("x", level=-1, channel='general', file=buf)
+        print_banner("x", level=-1, channel='general', file=buf)
+        print_error("x", level=-3, channel='error', file=buf)
+        print_step(1, 3, "x", level=-1, channel='general', file=buf)
+        assert buf.getvalue()  # something was written
+
+
+# ---------------------------------------------------------------------------
+# set_channel_fd usage tests
+# ---------------------------------------------------------------------------
+class TestSetChannelFdUsage:
+    """Commands can use set_channel_fd() to make channels user-facing."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_manager(self):
+        old = _manager_mod._manager
+        yield
+        _manager_mod._manager = old
+
+    def test_setup_channel_redirected_to_stdout(self, capsys):
+        """set_channel_fd('setup', sys.stdout) makes setup messages user-facing."""
+        import sys
+        init_output(verbosity=1, channel_fds=GTT_FDS)
+        out = get_output()
+        # Before: setup goes to stderr (no FD override for 'setup')
+        out.emit(1, "before redirect", channel='setup')
+        captured_before = capsys.readouterr()
+        assert "before redirect" in captured_before.err
+
+        # After: redirect setup to stdout (like create.py does)
+        out.set_channel_fd('setup', sys.stdout)
+        out.emit(1, "after redirect", channel='setup')
+        captured_after = capsys.readouterr()
+        assert "after redirect" in captured_after.out
+
+
+# ---------------------------------------------------------------------------
 # Error routing tests
 # ---------------------------------------------------------------------------
 class TestPrintErrorRoutesToManager:

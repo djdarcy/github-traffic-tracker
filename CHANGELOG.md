@@ -5,6 +5,32 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4-alpha] - 2026-03-03
+
+Finish #59 output overrides, integrate preserve_lib as executor backend.
+
+### Added
+- **preserve_lib** (`src/ghtraf/lib/preserve_lib/`, 12 files, 8,687 lines) —
+  Full port from preservelib. Manifest-tracked, hash-verified, metadata-preserving
+  file operations. Provides PEV stages 5-6 (verify + rollback) for the
+  plan-execute architecture. FileCategory/ConflictResolution enums linked to
+  core_lib (single source of truth via Python `is` identity).
+- 27 preserve_lib smoke tests (`test_preserve_lib.py`) — enum identity, hash
+  operations, verification, metadata collection, file comparison, destination
+  scanning, manifest structure, verification types
+- 8 executor bridge integration tests (`test_executor_bridge.py`) — end-to-end
+  scan → plan → execute → verify composability, dry-run, dependency chains,
+  failure propagation, hash roundtrip, tamper detection
+
+### Changed
+- `print_*()` functions accept `level=` and `channel=` keyword-only params
+  for caller-specified overrides (completes #59 acceptance criteria)
+- `create.py` calls `set_channel_fd('setup', sys.stdout)` — first real use of
+  per-command channel FD overrides
+- 9 new output tests for level/channel overrides and set_channel_fd usage
+- Version bump 0.3.3 → 0.3.4
+- Test count: 311 → 346 (+35 new)
+
 ## [0.3.3-alpha] - 2026-03-02
 
 Plan-execute infrastructure — core_lib and plan_lib as DazzleLib candidates.

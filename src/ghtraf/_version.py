@@ -12,11 +12,11 @@ Example: 0.2.0-alpha_main_4-20260226-a1b2c3d4
 # Version components - edit these for version bumps
 MAJOR = 0
 MINOR = 3
-PATCH = 7
+PATCH = 8
 PHASE = "alpha"  # Per-MINOR feature set: None, "alpha", "beta", "rc1", etc.
 
 # Auto-updated by git hooks - do not edit manually
-__version__ = "0.3.7-alpha_main_22-20260324-ab8513e"
+__version__ = "0.3.8-alpha_main_24-20260325-65c1b51"
 __app_name__ = "ghtraf"
 
 

@@ -5,6 +5,30 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8-alpha] - 2026-03-24
+
+Bump Actions dependencies to Node.js 24, add dashboard attribution.
+
+### Changed
+- `actions/github-script` v7 -> v8 (Node.js 24, fixes deprecation warning)
+- `actions/upload-artifact` v4 -> v7 in publish workflow
+- `actions/download-artifact` v4 -> v8 in publish workflow
+- `workflowVersion` bumped to 0.3.8
+- Version bump 0.3.7 -> 0.3.8
+
+### Added
+- **GHTraf branding** in dashboard — banner image (icon + wordmark) in
+  h1 heading next to "Project Statistics", and "Powered by GHTraf"
+  circular badge in footer (66% opacity, solid with blue glow on hover).
+  Footer text attribution shows version from `state.workflowVersion`.
+  Applied to both live dashboard and template.
+- GHTraf logo, banner, and icon assets (`docs/images/`), included in
+  template package for consumer deployments
+
+### Fixed
+- Template tests updated for new image assets (file count 4 -> 7) and
+  intentional GTT attribution links (excluded from placeholder check)
+
 ## [0.3.7-alpha] - 2026-03-24
 
 Empirically validated organic clone formulas (Issue #49) — Pages build detection,

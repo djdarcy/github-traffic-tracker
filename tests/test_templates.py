@@ -52,13 +52,13 @@ class TestTemplateStructure:
     def test_favicon_exists(self):
         assert (TEMPLATES_ROOT / "docs" / "stats" / "favicon.svg").is_file()
 
-    def test_exactly_four_template_files(self):
-        """No stray files in the template tree."""
+    def test_template_file_count(self):
+        """All expected template files are present."""
         all_files = []
         for item in _walk_traversable(TEMPLATES_ROOT):
             if item.is_file():
                 all_files.append(item.name)
-        assert len(all_files) == 4
+        assert len(all_files) == 7  # workflow, dashboard, readme, favicon, 3 images
 
 
 # ---------------------------------------------------------------------------
@@ -79,7 +79,12 @@ class TestDashboardPlaceholders:
 
     @pytest.mark.parametrize("value", GTT_SPECIFIC)
     def test_no_gtt_specific_value(self, value):
-        assert value not in self.content, f"GTT-specific value found: {value}"
+        # Strip lines that intentionally reference GTT (attribution links)
+        filtered = "\n".join(
+            line for line in self.content.splitlines()
+            if "djdarcy/github-traffic-tracker" not in line
+        )
+        assert value not in filtered, f"GTT-specific value found: {value}"
 
 
 class TestReadmePlaceholders:

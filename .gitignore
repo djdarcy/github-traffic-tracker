@@ -2,6 +2,11 @@
 # This template provides comprehensive exclusions for various languages and tools
 
 #######################
+# WIP asset backups    #
+#######################
+baks/
+
+#######################
 # Research testbed     #
 #######################
 # Machine-local state (trigger timestamps, progress)

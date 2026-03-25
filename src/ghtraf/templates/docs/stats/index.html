@@ -81,6 +81,34 @@
             font-size: 1.75rem;
             font-weight: 600;
         }
+        .ghtraf-heading {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 0;
+        }
+        .ghtraf-heading img {
+            height: 1.6em;
+            vertical-align: middle;
+            margin-right: 0.15em;
+            position: relative;
+            top: -0.05em;
+        }
+        .ghtraf-footer-badge {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.66;
+            transition: opacity 0.3s, filter 0.3s;
+        }
+        .ghtraf-footer-badge:hover {
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(88, 166, 255, 0.5));
+        }
+        .ghtraf-footer-badge img {
+            height: 76px;
+            width: 76px;
+        }
         .subtitle {
             color: var(--text-secondary);
             font-size: 0.95rem;
@@ -474,6 +502,9 @@
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
+        .footer-main {
+            position: relative;
+        }
         footer p { margin: 0.3rem 0; }
 
         .hidden { display: none !important; }
@@ -488,6 +519,8 @@
             .tab { padding: 0.5rem 0.85rem; font-size: 0.8rem; }
             .stat-item { min-width: 80px; padding: 0.75rem 1rem; }
             .stat-value { font-size: 1.4rem; }
+            .ghtraf-footer-badge { position: static; transform: none; margin-top: 0.5rem; }
+            .ghtraf-footer-badge img { height: 56px; width: 56px; }
         }
     </style>
 </head>
@@ -498,7 +531,7 @@
                 <p class="banner-title">PLACEHOLDER</p>
                 <p class="banner-arrow">View repository &rarr;</p>
             </a>
-            <h1>Project Statistics</h1>
+            <h1><a href="https://github.com/djdarcy/github-traffic-tracker" class="ghtraf-heading"><img src="../images/ghtraf-banner.png" alt="GHTraf"></a> Project Statistics</h1>
             <p class="subtitle">Downloads, clones, views, and community insights</p>
         </header>
 
@@ -882,11 +915,23 @@
         </main>
 
         <footer>
-            <p>Data updates daily at 3:00 AM UTC &middot; Last data point: <span id="last-updated">--</span></p>
-            <p>
-                <a href="https://github.com/OWNER/REPO">Repository</a> &middot;
-                <a href="https://github.com/OWNER/REPO/releases">Releases</a>
-            </p>
+            <div class="footer-main">
+                <div class="footer-text">
+                    <p>Data updates daily at 3:00 AM UTC &middot; Last data point: <span id="last-updated">--</span></p>
+                    <p>
+                        <a href="https://github.com/OWNER/REPO">Repository</a> &middot;
+                        <a href="https://github.com/OWNER/REPO/releases">Releases</a>
+                    </p>
+                    <p style="margin-top: 0.8rem; font-size: 0.8rem; font-weight: 600;">
+                        Dashboard by <a href="https://github.com/djdarcy/github-traffic-tracker">GitHub Traffic Tracker</a>
+                        <span id="gtt-version"></span>
+                        &mdash; zero-server traffic analytics for any GitHub repo
+                    </p>
+                </div>
+                <a href="https://github.com/djdarcy/github-traffic-tracker" class="ghtraf-footer-badge" title="Powered by GHTraf">
+                    <img src="../images/ghtraf-logo.png" alt="Powered by GHTraf">
+                </a>
+            </div>
             <aside class="privacy-note">
                 <strong>Privacy</strong> &mdash; This tool contains no telemetry or tracking of any kind.
                 All statistics shown here come from
@@ -1168,6 +1213,11 @@
             // Footer last updated
             if (history.length > 0) {
                 setText('last-updated', formatDateFull(history[history.length - 1].date));
+            }
+            // GTT version attribution
+            var gttVer = document.getElementById('gtt-version');
+            if (gttVer && state.workflowVersion) {
+                gttVer.textContent = 'v' + state.workflowVersion;
             }
         }
 

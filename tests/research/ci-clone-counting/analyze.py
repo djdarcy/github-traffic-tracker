@@ -161,23 +161,17 @@ def find_day_clones(observations: List[dict], target_date: str) -> Optional[dict
     return None
 
 
-def find_previous_day_clones(observations: List[dict], target_date: str) -> Optional[dict]:
-    """Find clone counts for the day BEFORE target_date.
-
-    Used to compute deltas: post - pre = experiment's contribution.
-    """
-    dt = datetime.strptime(target_date, "%Y-%m-%d")
-    from datetime import timedelta
-    prev_date = (dt - timedelta(days=1)).strftime("%Y-%m-%d")
-    return find_day_clones(observations, prev_date)
-
-
 def join_experiment_with_observations(exp: dict, state: dict,
                                       observations: List[dict]) -> dict:
     """Join an experiment definition with observed data.
 
     Returns a copy of the experiment dict with 'observed' fields filled in.
     The original experiment file is NEVER modified.
+
+    The Traffic API returns per-day ABSOLUTE counts (not cumulative totals).
+    Each day's entry is independent: {timestamp, count, uniques} represents
+    the total clones/uniques for that specific UTC day. We read the trigger
+    date's counts directly -- no delta calculation needed.
     """
     exp_copy = json.loads(json.dumps(exp))  # Deep copy
     exp_id = exp_copy["id"]
@@ -188,28 +182,29 @@ def join_experiment_with_observations(exp: dict, state: dict,
 
     exp_copy["date"] = trigger_date
 
-    # Find pre (day before experiment) and post (day of experiment)
-    pre = find_previous_day_clones(observations, trigger_date)
-    post = find_day_clones(observations, trigger_date)
+    # Look up the per-day entry for the experiment's trigger date
+    day_data = find_day_clones(observations, trigger_date)
 
-    if pre is not None:
-        exp_copy["observed"]["pre"] = {
-            "date_count": pre["count"],
-            "date_uniques": pre["uniques"],
-            "source": f"observation matching {trigger_date} - 1 day",
-        }
-
-    if post is not None:
+    if day_data is not None:
         exp_copy["observed"]["post"] = {
-            "date_count": post["count"],
-            "date_uniques": post["uniques"],
-            "source": f"observation matching {trigger_date}",
+            "date_count": day_data["count"],
+            "date_uniques": day_data["uniques"],
+            "source": f"per-day entry for {trigger_date}",
         }
-
-    # Compute deltas if we have both pre and post
-    if pre is not None and post is not None:
-        exp_copy["observed"]["delta_clones"] = post["count"] - pre["count"]
-        exp_copy["observed"]["delta_unique"] = post["uniques"] - pre["uniques"]
+        # Per-day counts ARE the experiment's signal (absolute, not delta)
+        exp_copy["observed"]["delta_clones"] = day_data["count"]
+        exp_copy["observed"]["delta_unique"] = day_data["uniques"]
+    else:
+        # Day not found in any observation snapshot -- may have fallen
+        # outside the 14-day rolling window, or API hasn't reported yet.
+        # Check if a zero-entry exists (day in window but no clones)
+        exp_copy["observed"]["delta_clones"] = 0
+        exp_copy["observed"]["delta_unique"] = 0
+        exp_copy["observed"]["post"] = {
+            "date_count": 0,
+            "date_uniques": 0,
+            "source": f"no entry for {trigger_date} (zero or not yet reported)",
+        }
 
     return exp_copy
 

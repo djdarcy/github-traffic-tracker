@@ -5,6 +5,66 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7-alpha] - 2026-03-24
+
+Empirically validated organic clone formulas (Issue #49) — Pages build detection,
+one-time backfill, workflowVersion tracking, and published research report.
+
+### Added
+- **Pages build detection** in CI clone counter — `pages build and deployment`
+  runs produce 1 hidden clone each, now counted in `ciCheckoutsToday`. Validated
+  by 14-experiment CI Clone Testbed (Issue #49, 22 days, RMSE 0.0000).
+- **`workflowVersion` stamp** in state.json — tracks which workflow version
+  produced the data. Enables future `ghtraf verify` (Issue #38) to detect
+  stale workflows in consumer repos.
+- **One-time Pages backfill** — on first run after upgrade, re-queries stored
+  `ciCheckouts` dates (up to 31 days) for Pages builds and corrects totals.
+  Guarded by `workflowVersion < "0.3.7"`, runs exactly once.
+- **Public research report** (`docs/ci-clone-research.md`) — methodology,
+  findings, formulas, and known limitations from the 14-experiment testbed.
+  First known empirical validation of how GitHub counts CI clones.
+- **Formula verification script** (`tests/one-offs/verify_formula_rmse.py`) —
+  Python numerical validation of proportional+ceiling vs unique_per_day across
+  all 14 experiments plus edge case scenarios.
+- **Experiments 12-13** — clean replication of Days 2 and 5 after removing
+  Pages contamination from Days 10-11.
+- **`scripts/seed_history.py`** — new-install helper that backfills
+  `dailyHistory` from GitHub's 14-day traffic API window. ROW-level
+  operation (creates entries for missing days); complements the
+  COLUMN-level `backfill_stats_fields.py` (patches fields on existing
+  entries). Supports `--write` to apply, dry-run by default. Reads
+  config from `.ghtraf.json` or explicit `--gist-id --owner --repo`.
+- **`tests/one-offs/star_radar_poc.py`** — proof-of-concept for
+  cross-repo star delta tracking (Issue #69). Collects stargazer data
+  across all user + org repos via GitHub GraphQL API with daily/weekly
+  aggregation and snapshot comparison.
+
+### Fixed
+- **Dev tab organic clone divergence** — Dev tab used old global subtraction
+  (`totalClones - totalCiCheckouts`) instead of delta-accumulated
+  `state.totalOrganicClones` (Schema v3). Now uses v3 value with fallback
+  to global subtraction for pre-v3 state files. Uses `!= null` check (not
+  `||`) to correctly handle `totalOrganicClones: 0`.
+- **Observer "Argument list too long"** — testbed observer workflow failed
+  after 17 observations when base64-encoded payload exceeded OS arg limit.
+  Fixed with `jq --rawfile` and `curl -d @file`.
+- **analyze.py delta computation** — switched to per-day absolute counts.
+
+### Changed
+- `ciRunsWithCheckouts` now includes Pages builds (1 identity per day)
+- Template workflow synced with all changes
+- Testbed observer workflow disabled (experiments complete)
+- Version bump 0.3.6 -> 0.3.7
+
+### Research Findings (Issue #49)
+- 1 `actions/checkout` = exactly 1 clone (confirmed across all configurations)
+- `GITHUB_TOKEN` = 1 unique cloner per UTC day regardless of run count
+- PAT = separate unique identity from `GITHUB_TOKEN`
+- Pages build = 1 hidden clone per build (invisible to checkout-only detection)
+- Proportional+ceiling formula: RMSE 0.0000 with Pages detection (14 experiments)
+- unique_per_day formula: RMSE 0.2673 (fails on PAT case)
+- Decision: keep proportional+ceiling, add Pages detection
+
 ## [0.3.6-alpha] - 2026-03-03
 
 PEV retrofit of files path — `--files-only` now uses plan-execute pattern end-to-end.

@@ -2047,7 +2047,11 @@
             // --- Summary Cards ---
             var rawClones = state.totalClones || 0;
             var ciCheckouts = state.totalCiCheckouts || 0;
-            var organicClones = Math.max(0, rawClones - ciCheckouts);
+            // Use delta-accumulated organic total (Schema v3) when available,
+            // fall back to global subtraction for pre-v3 state files
+            var organicClones = state.totalOrganicClones != null
+                ? state.totalOrganicClones
+                : Math.max(0, rawClones - ciCheckouts);
 
             // CI rate: compute only from tracked period (entries with organicClones field)
             // totalClones includes a ~1000 base approximation from before proper tracking

@@ -116,6 +116,28 @@
       "date": null,
       "status": "pending",
       "replicate_of": "exp-05"
+    },
+    {
+      "day": 12,
+      "id": "exp-12",
+      "name": "Clean Single Checkout",
+      "file": "data/experiments/exp-12-clean-single.json",
+      "workflow": "exp-12-clean-single.yml",
+      "date": null,
+      "status": "pending",
+      "replicate_of": "exp-02",
+      "replaces": "exp-10"
+    },
+    {
+      "day": 13,
+      "id": "exp-13",
+      "name": "Clean Matrix 3x3",
+      "file": "data/experiments/exp-13-clean-matrix.json",
+      "workflow": "exp-13-clean-matrix.yml",
+      "date": null,
+      "status": "pending",
+      "replicate_of": "exp-05",
+      "replaces": "exp-11"
     }
   ]
 }

@@ -66,24 +66,29 @@ jobs:
           UPDATED=$(echo "$EXISTING_CONTENT" | jq --argjson new "$OBS_RECORD" '. + [$new]')
 
           # 7. Write back via Contents API (NO git checkout, NO git push)
-          ENCODED=$(echo "$UPDATED" | base64 -w0)
+          # Pipe through files to avoid "Argument list too long" when the
+          # base64-encoded observations.json exceeds OS command-line limits.
+          ENCODED_FILE=$(mktemp)
+          BODY_FILE=$(mktemp)
+          trap "rm -f $ENCODED_FILE $BODY_FILE" EXIT
+
+          echo "$UPDATED" | base64 -w0 > "$ENCODED_FILE"
 
           if [ -n "$EXISTING_SHA" ]; then
-            # Update existing file
-            curl -sf -X PUT \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              "https://api.github.com/repos/$REPO/contents/data/observations.json" \
-              -d "{\"message\":\"Observation $(date -u +%Y-%m-%d)\",\"content\":\"$ENCODED\",\"sha\":\"$EXISTING_SHA\"}" \
-              > /dev/null
+            jq -n --arg msg "Observation $(date -u +%Y-%m-%d)" \
+                  --arg sha "$EXISTING_SHA" \
+                  --rawfile content "$ENCODED_FILE" \
+                  '{message: $msg, content: $content, sha: $sha}' > "$BODY_FILE"
           else
-            # Create new file
-            curl -sf -X PUT \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              "https://api.github.com/repos/$REPO/contents/data/observations.json" \
-              -d "{\"message\":\"Initial observation $(date -u +%Y-%m-%d)\",\"content\":\"$ENCODED\"}" \
-              > /dev/null
+            jq -n --arg msg "Initial observation $(date -u +%Y-%m-%d)" \
+                  --rawfile content "$ENCODED_FILE" \
+                  '{message: $msg, content: $content}' > "$BODY_FILE"
           fi
+
+          curl -sf -X PUT \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/$REPO/contents/data/observations.json" \
+            -d @"$BODY_FILE" > /dev/null
 
           echo "Observation committed via Contents API (zero clone contamination)."

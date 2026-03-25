@@ -138,6 +138,7 @@ jobs:
             }
 
             state.schemaVersion = CURRENT_SCHEMA;
+            const WORKFLOW_VERSION = "0.3.7";
 
             // 3. Accumulate clones (delta-based: track last-seen counts per date)
             // The Traffic API returns 14 days of data, including zero-count days.
@@ -423,7 +424,11 @@ jobs:
             console.log(`Daily history: ${state.dailyHistory.length} entries`);
 
             // 7.5 Count CI checkouts for today (dynamic per-run detection)
+            // Counts two CI clone sources:
+            //   1. actions/checkout steps in workflow jobs (1 checkout = 1 clone, validated by Issue #49 testbed)
+            //   2. Pages build deployments (each produces 1 hidden clone, not visible via job steps)
             let ciCheckoutsToday = 0;
+            let pagesBuildsToday = 0;
             const ciDetail = {};
             try {
               const runs = await github.rest.actions.listWorkflowRunsForRepo({
@@ -431,6 +436,19 @@ jobs:
               });
               for (const run of runs.data.workflow_runs) {
                 const wfName = run.name;
+
+                // Pages builds use an internal clone mechanism outside actions/checkout.
+                // Each "pages build and deployment" run = 1 clone (confirmed by experiment).
+                if (wfName === 'pages build and deployment') {
+                  pagesBuildsToday++;
+                  if (!ciDetail[wfName]) {
+                    ciDetail[wfName] = { runs: 0, checkoutsPerRun: [], pagesBuilds: 0 };
+                  }
+                  ciDetail[wfName].runs++;
+                  ciDetail[wfName].pagesBuilds++;
+                  continue;
+                }
+
                 if (!ciDetail[wfName]) {
                   ciDetail[wfName] = { runs: 0, checkoutsPerRun: [] };
                 }
@@ -448,15 +466,24 @@ jobs:
                 ciDetail[wfName].checkoutsPerRun.push(runCheckouts);
                 ciCheckoutsToday += runCheckouts;
               }
+              // Add Pages builds to total CI clones
+              ciCheckoutsToday += pagesBuildsToday;
+              if (pagesBuildsToday > 0) {
+                console.log(`Pages builds today: ${pagesBuildsToday} (each = 1 hidden clone)`);
+              }
               console.log(`CI checkouts today: ${ciCheckoutsToday} (${runs.data.total_count} runs)`);
             } catch (e) {
               console.log(`CI checkout counting error: ${e.message}`);
             }
 
-            // Count distinct CI runs that performed at least one checkout
+            // Count distinct CI runs that performed at least one checkout (or Pages build)
             let ciRunsWithCheckouts = 0;
             for (const wf of Object.values(ciDetail)) {
-              ciRunsWithCheckouts += wf.checkoutsPerRun.filter(c => c > 0).length;
+              if (wf.pagesBuilds) {
+                ciRunsWithCheckouts += 1;  // Pages builds share 1 identity per day
+              } else {
+                ciRunsWithCheckouts += wf.checkoutsPerRun.filter(c => c > 0).length;
+              }
             }
 
             // Store CI checkout data
@@ -466,6 +493,38 @@ jobs:
 
             // Cumulative CI checkout counter (never trimmed, unlike the per-day map)
             state.totalCiCheckouts = (state.totalCiCheckouts || 0) + (ciCheckoutsToday - previousCiToday);
+
+            // One-time backfill: re-count Pages builds for stored dates that pre-date
+            // Pages detection. Runs once when workflowVersion is absent or older.
+            if (!state.workflowVersion || state.workflowVersion < WORKFLOW_VERSION) {
+              console.log('Backfilling Pages builds for stored CI dates...');
+              for (const dateStr of Object.keys(state.ciCheckouts || {})) {
+                if (dateStr === todayStr) continue; // already counted above
+                try {
+                  const histRuns = await github.rest.actions.listWorkflowRunsForRepo({
+                    owner, repo, created: dateStr, per_page: 100
+                  });
+                  let pagesForDate = 0;
+                  for (const r of histRuns.data.workflow_runs) {
+                    if (r.name === 'pages build and deployment') pagesForDate++;
+                  }
+                  if (pagesForDate > 0) {
+                    const entry = state.ciCheckouts[dateStr];
+                    entry.total += pagesForDate;
+                    entry.runs += 1; // Pages = 1 identity per day
+                    if (!entry.byWorkflow) entry.byWorkflow = {};
+                    entry.byWorkflow['pages build and deployment'] = {
+                      runs: pagesForDate, checkoutsPerRun: [], pagesBuilds: pagesForDate
+                    };
+                    state.totalCiCheckouts += pagesForDate;
+                    console.log(`  ${dateStr}: +${pagesForDate} Pages builds`);
+                  }
+                } catch (e) {
+                  console.log(`  ${dateStr}: backfill skipped (${e.message})`);
+                }
+              }
+            }
+            state.workflowVersion = WORKFLOW_VERSION;
 
             // Trim ciCheckouts to last 31 days
             const ciDates = Object.keys(state.ciCheckouts).sort();

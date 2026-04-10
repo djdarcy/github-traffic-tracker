@@ -11,6 +11,7 @@ Equivalent to the standalone setup-gists.py script.
 """
 
 import html as html_module
+import json
 import re
 import shutil
 import sys
@@ -386,11 +387,22 @@ def _run_files_only(args):
         print_info(f"  Copied {copied} file(s), skipped {skipped} file(s).")
 
     # Run configure if requested (fixes #75)
-    if not dry_run and getattr(args, 'configure_files', False):
-        import json as _json
+    if not dry_run and args.configure_files:
         config_path = Path(repo_dir) / ".ghtraf.json"
         if config_path.exists():
-            config = _json.loads(config_path.read_text(encoding="utf-8"))
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            # .ghtraf.json only stores persisted fields. configure.* expects
+            # derived fields computed at runtime in the main path (create.py:496
+            # and 604). Recreate them here so configure doesn't KeyError.
+            if "display_name" in config and "display_name_html" not in config:
+                config["display_name_html"] = html_module.escape(config["display_name"])
+            if "gh_username" not in config:
+                try:
+                    config["gh_username"] = gh.resolve_github_username()
+                except Exception:
+                    # Fallback: use owner as gh_username (common case)
+                    config["gh_username"] = config.get("owner", "")
+
             dashboard_path = Path(repo_dir) / "docs" / "stats" / "index.html"
             readme_path = Path(repo_dir) / "docs" / "stats" / "README.md"
             workflow_path = Path(repo_dir) / ".github" / "workflows" / "traffic-badges.yml"
@@ -404,9 +416,10 @@ def _run_files_only(args):
             print_warn(f"No .ghtraf.json found at {config_path}")
             print_info("  Run 'ghtraf create --configure' (without --files-only) to configure.")
 
-    elif not dry_run and any(
-        r.success and not r.skipped for r in results
-    ):
+    # Post-install hint: only show "next: configure" if configure didn't run this pass
+    if (not dry_run
+            and not args.configure_files
+            and any(r.success and not r.skipped for r in results)):
         import ghtraf.hints  # noqa: F401
         out.hint('setup.configure', 'result')
         print_info("")

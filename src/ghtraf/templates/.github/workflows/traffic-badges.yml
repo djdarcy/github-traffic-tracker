@@ -138,7 +138,7 @@ jobs:
             }
 
             state.schemaVersion = CURRENT_SCHEMA;
-            const WORKFLOW_VERSION = "0.3.9";
+            const WORKFLOW_VERSION = "0.3.10";
 
             // 3. Accumulate clones (delta-based: track last-seen counts per date)
             // The Traffic API returns 14 days of data, including zero-count days.

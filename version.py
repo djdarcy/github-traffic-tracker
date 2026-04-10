@@ -17,17 +17,21 @@ Components:
 # Semantic version components
 MAJOR = 0
 MINOR = 3
-PATCH = 9
+PATCH = 10
 
 # Optional release phase (alpha, beta, rc1, rc2, etc.)
 # Set to None for stable releases
-PHASE = "alpha"  # Options: None, "alpha", "beta", "rc1", "rc2", etc.
+PHASE = None  # Options: None, "alpha", "beta", "rc1", "rc2", etc.
+# NOTE: temporarily None to make 0.3.10 installable via `pip install` without
+# --pre. The project is still in alpha overall — see #52 (display version) and
+# #77 (git-repokit-common subtree port) for the proper fix.
+PROJECT_PHASE = "alpha"  # Project-wide maturity: "prealpha", "alpha", "beta", "stable"
 
 # Full version string - updated by git pre-commit hook
 # DO NOT EDIT THIS LINE MANUALLY
 # Note: Hash reflects the commit this version builds upon (HEAD at commit time)
 # The hash will be one commit behind after the commit is created (git limitation)
-__version__ = "0.3.9-alpha_main_24-20260410-f27b488"
+__version__ = "0.3.10_main_28-20260410-92be410"
 
 
 def get_version():

@@ -294,6 +294,45 @@ class TestFilesOnlyDispatch:
         assert content != "OLD CONTENT"
         assert len(content) > 50  # real template content
 
+    def test_files_only_with_configure_substitutes_placeholders(self, tmp_path):
+        """--files-only --configure should deploy templates AND substitute
+        placeholders using .ghtraf.json (regression test for #75, PR #76).
+
+        Before PR #76, --configure was silently ignored on the --files-only
+        path, leaving PLACEHOLDER, OWNER/REPO, and USER/GISTID in the deployed
+        files. This test verifies the two-step workflow now works end-to-end.
+        """
+        import json
+        # Pre-write .ghtraf.json (as would exist after a prior cloud setup)
+        config = {
+            "owner": "testorg",
+            "repo": "testrepo",
+            "created": "2026-04-10",
+            "display_name": "Test Repo",
+            "badge_gist_id": "abc123",
+            "archive_gist_id": "def456",
+            "dashboard_dir": "docs/stats",
+            "schema_version": 1,
+        }
+        (tmp_path / ".ghtraf.json").write_text(json.dumps(config), encoding="utf-8")
+
+        result = main([
+            "create", "--files-only", "--configure",
+            "--repo-dir", str(tmp_path),
+            "--non-interactive",
+        ])
+        assert result == 0
+
+        # Dashboard should have substituted values
+        dashboard = (tmp_path / "docs" / "stats" / "index.html").read_text(encoding="utf-8")
+        assert "testorg" in dashboard
+        assert "testrepo" in dashboard
+        assert "abc123" in dashboard
+        assert "2026-04-10" in dashboard  # REPO_CREATED substituted
+        # Raw placeholders should be gone
+        assert "USER/GISTID" not in dashboard
+        assert "OWNER/REPO" not in dashboard
+
     def test_cloud_setup_still_works_without_files_only(self, mock_gh, capsys):
         """Without --files-only, create should still do cloud setup."""
         result = main([

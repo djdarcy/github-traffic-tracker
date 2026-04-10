@@ -5,6 +5,50 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.10-alpha] - 2026-04-10
+
+Fix `ghtraf create --files-only --configure` substitution bug, derived
+field KeyError, style cleanup, and make the package installable via
+`pip install` without `--pre` (first install-without-pre release in
+the 0.3.x series).
+
+### Fixed
+- **`--files-only --configure` was a no-op** (#75, PR #76) — the
+  `_run_files_only` function never checked `args.configure_files`, so
+  running `ghtraf create --files-only --configure` copied templates but
+  never substituted placeholders (`PLACEHOLDER`, `OWNER/REPO`,
+  `USER/GISTID`). Now reads `.ghtraf.json` after deploying files and
+  runs `configure_dashboard`, `configure_readme`, `configure_workflow`.
+  Credit to @TheCodingDragon0 for the fix. Issue #75 stays open for
+  remaining first-run UX work.
+- **`--files-only --configure` crashed with `KeyError: 'display_name_html'`**
+  — `.ghtraf.json` only persists raw fields (`display_name`, `owner`, etc.),
+  but `configure_dashboard` expects derived fields (`display_name_html`,
+  `gh_username`) that are computed at runtime in the main `run()` path.
+  `_run_files_only` now recreates these fields from the persisted config
+  before calling configure, falling back to `owner` for `gh_username` if
+  the GitHub CLI can't resolve it.
+- Added regression test `test_files_only_with_configure_substitutes_placeholders`
+  in `tests/test_create.py` to prevent this from recurring.
+- **`pip install github-traffic-tracker` silently skipped all 0.3.x
+  releases** — the previous versions all published as PEP 440
+  pre-releases (e.g., `0.3.9a0`) which pip hides by default. As a
+  quick fix, `PHASE = None` in both version files now so
+  `get_pip_version()` returns `"0.3.10"` instead of `"0.3.10a0"`.
+  `PROJECT_PHASE = "alpha"` added for future display-version work.
+  Proper fix tracked in #52 (three-field version model from TeeClip)
+  and #77 (port `scripts/` as a git subtree from `git-repokit-common`).
+
+### Changed
+- Post-install hint ("Tip: Re-run with --configure") now explicitly
+  guards on `not args.configure_files` with a comment, so the
+  mutually-exclusive behavior with the configure path is self-documenting
+- `create.py` style cleanup: `import json` moved to top-of-file with
+  other stdlib imports, dropped `_json` alias, replaced
+  `getattr(args, 'configure_files', False)` with direct attribute access
+- `workflowVersion` bumped to 0.3.10
+- Version bump 0.3.9 -> 0.3.10 (364 tests passing, +1 regression test)
+
 ## [0.3.9-alpha] - 2026-04-10
 
 Dashboard branding tweaks and template sync.

@@ -385,7 +385,26 @@ def _run_files_only(args):
         print_info("")
         print_info(f"  Copied {copied} file(s), skipped {skipped} file(s).")
 
-    if not dry_run and any(
+    # Run configure if requested (fixes #75)
+    if not dry_run and getattr(args, 'configure_files', False):
+        import json as _json
+        config_path = Path(repo_dir) / ".ghtraf.json"
+        if config_path.exists():
+            config = _json.loads(config_path.read_text(encoding="utf-8"))
+            dashboard_path = Path(repo_dir) / "docs" / "stats" / "index.html"
+            readme_path = Path(repo_dir) / "docs" / "stats" / "README.md"
+            workflow_path = Path(repo_dir) / ".github" / "workflows" / "traffic-badges.yml"
+
+            print_info("\nConfiguring project files...")
+            configure.configure_dashboard(config, dashboard_path)
+            configure.configure_readme(config, readme_path)
+            configure.configure_workflow(config, workflow_path)
+            print_info("")
+        else:
+            print_warn(f"No .ghtraf.json found at {config_path}")
+            print_info("  Run 'ghtraf create --configure' (without --files-only) to configure.")
+
+    elif not dry_run and any(
         r.success and not r.skipped for r in results
     ):
         import ghtraf.hints  # noqa: F401

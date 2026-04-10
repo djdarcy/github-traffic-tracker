@@ -5,6 +5,21 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.9-alpha] - 2026-04-10
+
+Dashboard branding tweaks and template sync.
+
+### Fixed
+- **Template out-of-sync with live dashboard** — `.ghtraf-heading img`
+  `top: -0.05em` was left over from design iteration; corrected to
+  `-0.16em` to match the live dashboard baseline alignment.
+
+### Changed
+- Tightened heading spacing: removed stray space between GHTraf banner
+  image and "Project Statistics" text in `h1`
+- `workflowVersion` bumped to 0.3.9
+- Version bump 0.3.8 -> 0.3.9
+
 ## [0.3.8-alpha] - 2026-03-24
 
 Bump Actions dependencies to Node.js 24, add dashboard attribution.

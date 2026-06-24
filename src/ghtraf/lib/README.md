@@ -150,13 +150,18 @@ core_lib          ← types only, zero deps
     ↑
 plan_lib          ← imports core_lib types
     ↑
-preserve_lib      ← imports core_lib types (FileCategory, ConflictResolution)
-    ↑
-commands/         ← import all three; provide executor_fn closures
+commands/         ← import core_lib + plan_lib; provide executor_fn closures
 
 log_lib           ← independent (no lib/ deps)
 help_lib          ← independent (no lib/ deps)
 ```
+
+The former vendored `preserve_lib` (a copy of preservelib) was removed: the
+preservation engine now lives in the published `dazzle-preservelib` package
+(L3 of the DazzleLib stack). ghtraf's runtime uses `core_lib` + soft-imported
+`dazzle_filekit`; only the smoke/executor-bridge tests pull `dazzle-preservelib`
+(a `[dev]` extra). Its `FileCategory`/`ConflictResolution` are value-compatible
+with `core_lib`'s but distinct objects -- compare by value across the boundary.
 
 ## Design Rules
 

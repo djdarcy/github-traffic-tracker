@@ -1,7 +1,7 @@
-"""Integration test: plan_lib executor ↔ preserve_lib operations.
+"""Integration test: plan_lib executor ↔ dazzle_preservelib operations.
 
 Validates the end-to-end pattern: scan → plan → execute → verify.
-The executor_fn uses preserve_lib's compare/hash/metadata functions
+The executor_fn uses dazzle_preservelib's compare/hash/metadata functions
 to perform real file operations driven by plan_lib's dependency engine.
 """
 
@@ -12,7 +12,7 @@ import pytest
 
 from ghtraf.lib.core_lib import Action, ActionResult, Plan, FileCategory
 from ghtraf.lib.plan_lib import execute_plan
-from ghtraf.lib.preserve_lib import (
+from dazzle_preservelib import (
     calculate_file_hash,
     verify_file_hash,
     compare_files,
@@ -198,11 +198,15 @@ class TestExecutePlanWithPreserveLib:
         # 5. Verify files match source
         for fc in scan.source_only:
             comparison = compare_files(fc.source_path, fc.dest_path)
-            assert comparison.category == FileCategory.IDENTICAL
+            # compare_files returns dazzle_preservelib's FileCategory; compare by
+            # value against core_lib's (value-compatible but distinct -- D5).
+            assert comparison.category.value == FileCategory.IDENTICAL.value
 
         for fc in scan.conflicts:
             comparison = compare_files(fc.source_path, fc.dest_path)
-            assert comparison.category == FileCategory.IDENTICAL
+            # compare_files returns dazzle_preservelib's FileCategory; compare by
+            # value against core_lib's (value-compatible but distinct -- D5).
+            assert comparison.category.value == FileCategory.IDENTICAL.value
 
     def test_dry_run_skips_execution(self, install_scenario):
         src, dst = install_scenario

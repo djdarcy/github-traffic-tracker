@@ -5,6 +5,28 @@ All notable changes to GitHub Traffic Tracker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.11-alpha] - 2026-06-23
+
+Adopt the published `dazzle-preservelib` (L3 of the DazzleLib stack) and drop
+the vendored copy of the preservation engine -- part of the stack-wide consumer
+migration off vendored library copies. An import-only change: no user-facing
+behavior or public API change.
+
+### Removed
+- **Vendored `ghtraf.lib.preserve_lib`** (a 12-file copy of preservelib). It was
+  test-only dead weight: ghtraf's runtime uses `core_lib` + soft-imported
+  `dazzle_filekit`, with no production import of `preserve_lib`.
+
+### Changed
+- The preservation smoke + executor-bridge tests now import the pip-installed
+  `dazzle_preservelib` instead of the vendored copy. Its `FileCategory` /
+  `ConflictResolution` enums are value-compatible with `core_lib`'s but are
+  distinct objects (D5), so cross-boundary comparisons go by `.value`.
+
+### Added
+- `dazzle-preservelib>=0.8.0` to the `[dev]` extra (test-only; not a runtime
+  dependency).
+
 ## [0.3.10-alpha] - 2026-04-10
 
 Fix `ghtraf create --files-only --configure` substitution bug, derived

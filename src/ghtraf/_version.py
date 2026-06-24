@@ -12,14 +12,14 @@ Example: 0.2.0-alpha_main_4-20260226-a1b2c3d4
 # Version components - edit these for version bumps
 MAJOR = 0
 MINOR = 3
-PATCH = 10
+PATCH = 11
 PHASE = None  # Per-release: None, "alpha", "beta", "rc1", etc.
 # NOTE: temporarily None to make 0.3.10 installable via `pip install` without
 # --pre. The project is still in alpha overall — see #52 and #77.
 PROJECT_PHASE = "alpha"  # Project-wide maturity: "prealpha", "alpha", "beta", "stable"
 
 # Auto-updated by git hooks - do not edit manually
-__version__ = "0.3.10_main_28-20260410-92be410"
+__version__ = "0.3.11_main_29-20260623-eea3d2f"
 __app_name__ = "ghtraf"
 
 

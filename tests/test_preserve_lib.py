@@ -1,7 +1,11 @@
-"""Smoke tests for preserve_lib — hash, compare, metadata, verify, manifest.
+"""Smoke tests for the preservation library — hash, compare, metadata, verify,
+manifest.
 
-These validate that the ported preserve_lib works correctly in the ghtraf
-context and that its shared types are identity-linked to core_lib.
+These validate that the pip-installed dazzle_preservelib (formerly the vendored
+ghtraf.lib.preserve_lib) provides the surface ghtraf needs, and that its
+FileCategory/ConflictResolution enums are VALUE-compatible with core_lib's (D5):
+dazzle_preservelib defines its own enum objects, distinct from core_lib's, with
+identical member names + values.
 """
 
 import os
@@ -12,8 +16,8 @@ from pathlib import Path
 import pytest
 
 from ghtraf.lib.core_lib.types import FileCategory, ConflictResolution
-from ghtraf.lib.preserve_lib import (
-    # Core types (should be same objects as core_lib)
+from dazzle_preservelib import (
+    # Core types (value-compatible with core_lib's, but distinct objects -- D5)
     FileCategory as PL_FileCategory,
     ConflictResolution as PL_ConflictResolution,
     # Manifest / hashing
@@ -66,16 +70,26 @@ def tmp_file_pair(tmp_path):
     return src, dst
 
 
-# ── Enum Identity Tests ──────────────────────────────────────────────
+# ── Enum Compatibility Tests (D5) ────────────────────────────────────
 
-class TestEnumIdentity:
-    """preserve_lib types must be the SAME objects as core_lib types."""
+class TestEnumCompatibility:
+    """dazzle_preservelib enums are VALUE-compatible with core_lib's (D5).
 
-    def test_file_category_is_same_object(self):
-        assert PL_FileCategory is FileCategory
+    They are DISTINCT objects (the library owns its own FileCategory /
+    ConflictResolution), but every core_lib member is present in the library's
+    enum with the same value -- so values compare equal across the boundary even
+    though the classes are not identical.
+    """
 
-    def test_conflict_resolution_is_same_object(self):
-        assert PL_ConflictResolution is ConflictResolution
+    def test_file_category_value_compatible(self):
+        cl = {m.name: m.value for m in FileCategory}
+        pl = {m.name: m.value for m in PL_FileCategory}
+        assert cl.items() <= pl.items()  # core_lib members covered, same values
+
+    def test_conflict_resolution_value_compatible(self):
+        cl = {m.name: m.value for m in ConflictResolution}
+        pl = {m.name: m.value for m in PL_ConflictResolution}
+        assert cl.items() <= pl.items()
 
     def test_file_category_members_accessible(self):
         assert PL_FileCategory.IDENTICAL.value == "identical"
@@ -171,7 +185,9 @@ class TestCompareFiles:
     def test_identical_files(self, tmp_file_pair):
         src, dst = tmp_file_pair
         result = compare_files(src / "same.txt", dst / "same.txt")
-        assert result.category == FileCategory.IDENTICAL
+        # compare_files returns dazzle_preservelib's FileCategory (PL_*), which
+        # is value-compatible with core_lib's but a distinct object (D5).
+        assert result.category == PL_FileCategory.IDENTICAL
         assert result.source_hash is not None
         assert result.dest_hash is not None
         assert result.source_hash == result.dest_hash
@@ -179,12 +195,12 @@ class TestCompareFiles:
     def test_conflicting_files(self, tmp_file_pair):
         src, dst = tmp_file_pair
         result = compare_files(src / "differ.txt", dst / "differ.txt")
-        assert result.category == FileCategory.CONFLICT
+        assert result.category == PL_FileCategory.CONFLICT
 
     def test_source_only(self, tmp_file_pair):
         src, dst = tmp_file_pair
         result = compare_files(src / "new.txt", dst / "nonexistent.txt")
-        assert result.category == FileCategory.SOURCE_ONLY
+        assert result.category == PL_FileCategory.SOURCE_ONLY
 
     def test_returns_file_comparison_type(self, tmp_file_pair):
         src, dst = tmp_file_pair

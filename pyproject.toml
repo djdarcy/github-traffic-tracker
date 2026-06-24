@@ -33,6 +33,11 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
+    # The preservation-library smoke + executor-bridge tests use the published
+    # dazzle-preservelib (replaced the vendored ghtraf.lib.preserve_lib). It is
+    # a TEST-only dep -- ghtraf's runtime uses core_lib + soft-imported
+    # dazzle_filekit, not dazzle-preservelib.
+    "dazzle-preservelib>=0.8.0",
 ]
 
 [project.urls]
